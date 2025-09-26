@@ -1,5 +1,6 @@
 package com.salmontaker.sniffy.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,7 +21,10 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -40,25 +44,38 @@ public class SecurityConfig {
         return source;
     }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,
-                                           CustomAccessDeniedHandler customAccessDeniedHandler,
-                                           CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
+    private HttpSecurity applyCommonSettings(HttpSecurity http) throws Exception {
         return http.cors(cors -> corsConfig())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(formLogin -> formLogin.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/user/{id}").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
-                        .requestMatchers("/api/user/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers("/api/auth/**").authenticated()
-                        .anyRequest().denyAll())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
-                        .accessDeniedHandler(customAccessDeniedHandler))
+                        .accessDeniedHandler(customAccessDeniedHandler));
+    }
+
+    @Bean
+    public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
+        applyCommonSettings(http);
+        return http.securityMatcher("/api/user/**", "/api/auth/login")
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .anyRequest().denyAll()
+                )
+                .build();
+    }
+
+    @Bean
+    public SecurityFilterChain protectedChain(HttpSecurity http) throws Exception {
+        applyCommonSettings(http);
+        return http.securityMatcher("/api/**")
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/user/**").authenticated()
+                        .requestMatchers("/api/auth/**").authenticated()
+                        .anyRequest().denyAll())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter((jwtToken -> {
                             String sub = jwtToken.getSubject();
                             Integer userId = Integer.valueOf(sub);
