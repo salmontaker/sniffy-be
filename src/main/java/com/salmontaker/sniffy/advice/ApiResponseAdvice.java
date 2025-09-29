@@ -30,6 +30,11 @@ public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
                                   Class<? extends HttpMessageConverter<?>> selectedConverterType,
                                   ServerHttpRequest request,
                                   ServerHttpResponse response) {
+        
+        if (body instanceof ApiResponse) {
+            return body;
+        }
+
         ApiResponse<Object> wrapped = ApiResponse.ok(body);
 
         // String 반환 시 Jackson이 아닌 StringHttpMessageConverter가 동작하는 예외 케이스 처리
