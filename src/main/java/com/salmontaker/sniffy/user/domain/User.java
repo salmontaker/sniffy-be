@@ -1,11 +1,15 @@
 package com.salmontaker.sniffy.user.domain;
 
+import com.salmontaker.sniffy.agency.domain.AgencyFavorite;
 import com.salmontaker.sniffy.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @SQLRestriction("deleted_at IS NULL")
@@ -21,9 +25,12 @@ public class User extends BaseEntity {
 
     @Column(length = 255)
     private String password;
-    
+
     @Column(length = 50)
     private String nickname;
+    
+    @OneToMany(mappedBy = "user")
+    private List<AgencyFavorite> favorites = new ArrayList<>();
 
     private User(String email, String password, String nickname) {
         // 이메일과 비밀번호는 null을 허용 (OAuth 계정)

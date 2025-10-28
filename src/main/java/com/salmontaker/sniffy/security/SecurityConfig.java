@@ -58,11 +58,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
         applyCommonSettings(http);
-        return http.securityMatcher("/api/user/**", "/api/auth/login")
+        return http.securityMatcher("/api/user/**", "/api/auth/login", "/api/agency")
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/agency").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/agency/*").permitAll()
                         .anyRequest().denyAll()
                 )
                 .build();
@@ -75,6 +77,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/user/**").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
+                        .requestMatchers("/api/agency/**").authenticated()
                         .anyRequest().denyAll())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter((jwtToken -> {
                             String sub = jwtToken.getSubject();
