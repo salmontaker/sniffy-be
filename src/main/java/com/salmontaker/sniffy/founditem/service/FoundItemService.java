@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.List;
@@ -21,8 +22,8 @@ public class FoundItemService {
 
     private static final int NUM_OF_ROWS = 50000;
     private static final int CONCURRENCY = 3;
+    private static final int RETRY_COUNT = 3;
 
-    @Transactional
     public void syncExternalData(String startDate, String endDate) {
         log.info("Fetching TotalCounts...");
 
@@ -48,25 +49,42 @@ public class FoundItemService {
 
                     int total = first.getBody().getTotalCount();
                     int totalPages = (int) Math.ceil((double) total / NUM_OF_ROWS);
+
                     log.info("TotalCount={}, TotalPages={}", total, totalPages);
+
                     return Mono.just(totalPages);
-                });
+                })
+                .retryWhen(defaultRetry("fetchTotalCount"));
     }
 
     private Flux<LostFoundResponse> fetchAllPages(String startDate, String endDate, int totalPages) {
         return Flux.range(1, totalPages)
-                .delayElements(Duration.ofMillis(250))
-                .flatMapSequential(page -> foundItemClient.fetchData(startDate, endDate, page, NUM_OF_ROWS)
-                        .doOnSubscribe(sub -> log.info("HTTP call started for page {}", page))
-                        .filter(LostFoundResponse::isSuccess), CONCURRENCY);
+                .flatMap(page -> Mono.delay(Duration.ofMillis(250))
+                                .then(foundItemClient.fetchData(startDate, endDate, page, NUM_OF_ROWS))
+                                .doOnSubscribe(sub -> log.info("Requesting page {}", page))
+                                .retryWhen(defaultRetry("page " + page)),
+                        CONCURRENCY);
     }
 
-    private void saveToDatabase(List<LostFoundResponse.Item> items) {
+    private Retry defaultRetry(String context) {
+        return Retry.backoff(RETRY_COUNT, Duration.ofSeconds(2))
+                .doBeforeRetry(signal ->
+                        log.warn("Retrying {} (attempt #{}) due to {}",
+                                context,
+                                signal.totalRetries() + 1,
+                                signal.failure().getMessage()));
+    }
+
+    @Transactional
+    protected void saveToDatabase(List<LostFoundResponse.Item> items) {
         log.info("Collected {} items", items.size());
 
         jdbcRepository.createTempTable();
-        jdbcRepository.insertTempTable(items);
-        jdbcRepository.mergeToMainTable();
-        jdbcRepository.dropTempTable();
+        try {
+            jdbcRepository.insertTempTable(items);
+            jdbcRepository.mergeToMainTable();
+        } finally {
+            jdbcRepository.dropTempTable();
+        }
     }
 }
