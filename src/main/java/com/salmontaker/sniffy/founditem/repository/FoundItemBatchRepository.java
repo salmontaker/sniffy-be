@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class FoundItemJdbcRepository {
+public class FoundItemBatchRepository {
     private final JdbcTemplate jdbc;
 
     public void createTempTable() {
