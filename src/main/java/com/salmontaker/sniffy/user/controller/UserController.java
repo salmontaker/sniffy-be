@@ -1,6 +1,5 @@
 package com.salmontaker.sniffy.user.controller;
 
-import com.salmontaker.sniffy.user.domain.User;
 import com.salmontaker.sniffy.user.dto.request.UserCreateRequest;
 import com.salmontaker.sniffy.user.dto.request.UserUpdateRequest;
 import com.salmontaker.sniffy.user.dto.response.UserResponse;
@@ -20,27 +19,23 @@ public class UserController {
 
     @GetMapping("/{id}")
     public UserResponse getUser(@PathVariable Integer id) {
-        User user = userService.getUser(id);
-        return UserResponse.from(user);
+        return userService.getUser(id);
     }
 
     @PostMapping
     public UserResponse createUser(@Valid @RequestBody UserCreateRequest request) {
-        User user = userService.registerUser(request);
-        return UserResponse.from(user);
+        return userService.registerUser(request);
     }
 
     @PutMapping
     public UserResponse updateUser(
             @AuthenticationPrincipal Integer userId,
             @Valid @RequestBody UserUpdateRequest request) {
-        User user = userService.changeUser(userId, request);
-        return UserResponse.from(user);
+        return userService.changeUser(userId, request);
     }
 
     @DeleteMapping
     public UserResponse deleteUser(@AuthenticationPrincipal Integer userId) {
-        User user = userService.withdrawUser(userId);
-        return UserResponse.from(user);
+        return userService.withdrawUser(userId);
     }
 }
