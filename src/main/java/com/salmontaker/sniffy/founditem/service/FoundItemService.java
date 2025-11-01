@@ -1,9 +1,17 @@
 package com.salmontaker.sniffy.founditem.service;
 
+import com.salmontaker.sniffy.common.PageResponse;
+import com.salmontaker.sniffy.founditem.domain.FoundItem;
 import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundResponse;
+import com.salmontaker.sniffy.founditem.dto.internal.request.FoundItemRequest;
+import com.salmontaker.sniffy.founditem.dto.internal.response.FoundItemResponse;
 import com.salmontaker.sniffy.founditem.repository.FoundItemJdbcRepository;
+import com.salmontaker.sniffy.founditem.repository.FoundItemRepository;
+import com.salmontaker.sniffy.founditem.repository.FoundItemSpecs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -17,12 +25,19 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FoundItemService {
+    private final FoundItemRepository foundItemRepository;
+
     private final FoundItemClient foundItemClient;
     private final FoundItemJdbcRepository jdbcRepository;
 
     private static final int NUM_OF_ROWS = 50000;
     private static final int CONCURRENCY = 3;
     private static final int RETRY_COUNT = 3;
+
+    public PageResponse<FoundItemResponse> getFoundItems(FoundItemRequest request, Pageable pageable) {
+        Page<FoundItem> foundItems = foundItemRepository.findAll(FoundItemSpecs.withFilter(request), pageable);
+        return PageResponse.from(foundItems.map(FoundItemResponse::from));
+    }
 
     public void syncExternalData(String startDate, String endDate) {
         log.info("Fetching TotalCounts...");
