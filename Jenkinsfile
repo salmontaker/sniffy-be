@@ -24,17 +24,20 @@ pipeline {
                     def repoUrl = scm.userRemoteConfigs[0].url
                     def repoName = repoUrl.tokenize('/').last().replace('.git', '')
 
-                    sh "docker build -t ${repoName}:latest ."
-                    sh "docker stop ${repoName} || true"
-                    sh "docker rm ${repoName} || true"
-                    sh """
-                        docker run \\
-                            -d \\
-                            --name ${repoName} \\
-                            --network=web \\
-                            --restart=always \\
-                            ${repoName}:latest
-                    """
+                    withCredentials([file(credentialsId: 'sniffy-be', variable: 'ENV_FILE')]) {
+                        sh "docker build -t ${repoName}:latest ."
+                        sh "docker stop ${repoName} || true"
+                        sh "docker rm ${repoName} || true"
+                        sh """
+                            docker run \\
+                                -d \\
+                                --name ${repoName} \\
+                                --network=web \\
+                                --restart=always \\
+                                --env-file $ENV_FILE \\
+                                ${repoName}:latest
+                        """
+                    }
                 }
             }
         }
