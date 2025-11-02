@@ -87,6 +87,6 @@ public class FoundItemBatchRepository {
     }
 
     public void dropTempTable() {
-        jdbc.execute("DROP TEMPORARY TABLE temp_found_item");
+        jdbc.execute("DROP TEMPORARY TABLE IF EXISTS temp_found_item");
     }
 }
