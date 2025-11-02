@@ -24,14 +24,25 @@ public class FoundItemBatchService {
     private static final int CONCURRENCY = 3;
     private static final int RETRY_COUNT = 3;
 
+    @Transactional
     public void syncExternalData(String startDate, String endDate) {
         log.info("Fetching TotalCounts...");
 
-        fetchAllItems(startDate, endDate)
+        List<LostFoundResponse.Item> items = fetchAllItems(startDate, endDate)
                 .collectList()
-                .doOnNext(this::saveToDatabase)
-                .doOnTerminate(() -> log.info("Sync Completed"))
                 .block();
+
+        log.info("Collected {} items", items.size());
+
+        jdbcRepository.createTempTable();
+        try {
+            jdbcRepository.insertTempTable(items);
+            jdbcRepository.mergeToMainTable();
+        } finally {
+            jdbcRepository.dropTempTable();
+        }
+
+        log.info("Sync Completed");
     }
 
     private Flux<LostFoundResponse.Item> fetchAllItems(String startDate, String endDate) {
@@ -73,18 +84,5 @@ public class FoundItemBatchService {
                                 context,
                                 signal.totalRetries() + 1,
                                 signal.failure().getMessage()));
-    }
-
-    @Transactional
-    protected void saveToDatabase(List<LostFoundResponse.Item> items) {
-        log.info("Collected {} items", items.size());
-
-        jdbcRepository.createTempTable();
-        try {
-            jdbcRepository.insertTempTable(items);
-            jdbcRepository.mergeToMainTable();
-        } finally {
-            jdbcRepository.dropTempTable();
-        }
     }
 }
