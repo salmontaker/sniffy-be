@@ -28,21 +28,42 @@ public class FoundItemBatchService {
     public void syncExternalData(String startDate, String endDate) {
         log.info("Fetching TotalCounts...");
 
-        List<LostFoundResponse.Item> items = fetchAllItems(startDate, endDate)
-                .collectList()
-                .block();
-
-        log.info("Collected {} items", items.size());
-
+        // 1. 임시 테이블 생성 (트랜잭션 시작)
         jdbcRepository.createTempTable();
+
         try {
-            jdbcRepository.insertTempTable(items);
+            // 2. 비동기 Flux 파이프라인 정의 (아직 실행 안 됨)
+            Flux<LostFoundResponse.Item> itemFlux = fetchAllItems(startDate, endDate);
+
+            // 3. Flux를 청크(List<Item>) 단위의 '블로킹' Iterable로 변환
+            Iterable<List<LostFoundResponse.Item>> itemChunks = itemFlux.buffer(NUM_OF_ROWS)
+                    .toIterable();
+
+            int totalInserted = 0;
+
+            // 4. 청크 단위로 반복하며 DB에 삽입
+            for (List<LostFoundResponse.Item> chunk : itemChunks) {
+                if (chunk.isEmpty()) {
+                    continue;
+                }
+
+                jdbcRepository.insertTempTable(chunk); // 청크 단위로 BATCH INSERT
+                totalInserted += chunk.size();
+                log.info("Inserted chunk of {}, total inserted: {}", chunk.size(), totalInserted);
+            }
+
+            log.info("Collected and inserted total {} items", totalInserted);
+
+            // 5. 모든 삽입이 끝나면 Merge 수행
             jdbcRepository.mergeToMainTable();
+
         } finally {
+            // 6. 성공/실패 여부와 관계없이 임시 테이블 삭제
             jdbcRepository.dropTempTable();
         }
 
         log.info("Sync Completed");
+        // (메서드 종료 시 트랜잭션 커밋)
     }
 
     private Flux<LostFoundResponse.Item> fetchAllItems(String startDate, String endDate) {
