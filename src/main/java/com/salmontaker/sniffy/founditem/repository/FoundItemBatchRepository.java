@@ -17,6 +17,19 @@ import java.util.List;
 public class FoundItemBatchRepository {
     private final JdbcTemplate jdbc;
 
+    public boolean hasTodayChangedItems() {
+        String sql = """
+                SELECT EXISTS(
+                    SELECT 1
+                    FROM found_item
+                    WHERE DATE(COALESCE(updated_at, created_at, deleted_at)) = CURDATE()
+                )
+                """;
+
+        Boolean exists = jdbc.queryForObject(sql, Boolean.class);
+        return exists != null && exists;
+    }
+
     public void createTempTable() {
         // 원본 스키마 기준으로 임시 테이블 생성
         jdbc.execute("CREATE TEMPORARY TABLE temp_found_item LIKE found_item");

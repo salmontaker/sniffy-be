@@ -26,6 +26,11 @@ public class FoundItemBatchService {
 
     @Transactional
     public void syncExternalData(String startDate, String endDate) {
+        if (foundItemBatchRepository.hasTodayChangedItems()) {
+            log.info("Detected items created, updated, or deleted today.");
+            return;
+        }
+
         log.info("Fetching TotalCounts...");
 
         // 1. 임시 테이블 생성 (트랜잭션 시작)
