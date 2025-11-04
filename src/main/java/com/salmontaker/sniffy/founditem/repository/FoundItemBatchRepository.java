@@ -86,6 +86,21 @@ public class FoundItemBatchRepository {
         jdbc.execute(sql);
     }
 
+    public void deleteFoundOrExpiredItem() {
+        String sql = """
+                UPDATE found_item fi
+                SET deleted_at = NOW()
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM temp_found_item t
+                    WHERE fi.atc_id = t.atc_id
+                      AND fi.fd_sn = t.fd_sn
+                )
+                """;
+
+        jdbc.execute(sql);
+    }
+
     public void dropTempTable() {
         jdbc.execute("DROP TEMPORARY TABLE IF EXISTS temp_found_item");
     }

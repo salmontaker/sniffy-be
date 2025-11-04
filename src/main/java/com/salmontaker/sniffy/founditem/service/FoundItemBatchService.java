@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FoundItemBatchService {
     private final FoundItemClient foundItemClient;
-    private final FoundItemBatchRepository jdbcRepository;
+    private final FoundItemBatchRepository foundItemBatchRepository;
 
     private static final int NUM_OF_ROWS = 50000;
     private static final int CONCURRENCY = 3;
@@ -29,7 +29,7 @@ public class FoundItemBatchService {
         log.info("Fetching TotalCounts...");
 
         // 1. 임시 테이블 생성 (트랜잭션 시작)
-        jdbcRepository.createTempTable();
+        foundItemBatchRepository.createTempTable();
 
         try {
             // 2. 비동기 Flux 파이프라인 정의 (아직 실행 안 됨)
@@ -47,7 +47,7 @@ public class FoundItemBatchService {
                     continue;
                 }
 
-                jdbcRepository.insertTempTable(chunk); // 청크 단위로 BATCH INSERT
+                foundItemBatchRepository.insertTempTable(chunk); // 청크 단위로 BATCH INSERT
                 totalInserted += chunk.size();
                 log.info("Inserted chunk of {}, total inserted: {}", chunk.size(), totalInserted);
             }
@@ -55,11 +55,13 @@ public class FoundItemBatchService {
             log.info("Collected and inserted total {} items", totalInserted);
 
             // 5. 모든 삽입이 끝나면 Merge 수행
-            jdbcRepository.mergeToMainTable();
+            foundItemBatchRepository.mergeToMainTable();
 
+            // 6. 주인을 찾았거나 6개월이 지난 항목 soft delete
+            foundItemBatchRepository.deleteFoundOrExpiredItem();
         } finally {
-            // 6. 성공/실패 여부와 관계없이 임시 테이블 삭제
-            jdbcRepository.dropTempTable();
+            // 7. 성공/실패 여부와 관계없이 임시 테이블 삭제
+            foundItemBatchRepository.dropTempTable();
         }
 
         log.info("Sync Completed");
