@@ -80,6 +80,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers("/api/agency/**").authenticated()
                         .requestMatchers("/api/found-items/**").authenticated()
+                        .requestMatchers("/api/keyword/**").authenticated()
                         .anyRequest().denyAll())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter((jwtToken -> {
                             String sub = jwtToken.getSubject();

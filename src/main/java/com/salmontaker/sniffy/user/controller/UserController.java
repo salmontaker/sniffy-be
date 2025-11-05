@@ -28,9 +28,8 @@ public class UserController {
     }
 
     @PutMapping
-    public UserResponse updateUser(
-            @AuthenticationPrincipal Integer userId,
-            @Valid @RequestBody UserUpdateRequest request) {
+    public UserResponse updateUser(@AuthenticationPrincipal Integer userId,
+                                   @Valid @RequestBody UserUpdateRequest request) {
         return userService.changeUser(userId, request);
     }
 
