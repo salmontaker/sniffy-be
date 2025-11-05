@@ -9,7 +9,6 @@ import com.salmontaker.sniffy.agency.repository.AgencyRepository;
 import com.salmontaker.sniffy.common.PageResponse;
 import com.salmontaker.sniffy.user.domain.User;
 import com.salmontaker.sniffy.user.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -29,7 +29,7 @@ public class AgencyService {
 
     public AgencyResponse getAgency(Integer id) {
         Agency agency = agencyRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Agency not found"));
+                .orElseThrow(() -> new NoSuchElementException("Agency not found"));
 
         return AgencyResponse.from(agency);
     }
@@ -49,16 +49,16 @@ public class AgencyService {
     public PageResponse<AgencyResponse> getFavoriteAgencies(Integer userId, Pageable pageable) {
         Page<AgencyFavorite> agencyFavorites = agencyFavoriteRepository.findAllByUserId(userId, pageable);
         Page<Agency> agencies = agencyFavorites.map(AgencyFavorite::getAgency);
-        
+
         return PageResponse.from(agencies.map(AgencyResponse::from));
     }
 
     @Transactional
     public Boolean toggleFavorite(Integer userId, Integer agencyId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
         Agency agency = agencyRepository.findById(agencyId)
-                .orElseThrow(() -> new EntityNotFoundException("Agency not found"));
+                .orElseThrow(() -> new NoSuchElementException("Agency not found"));
 
         boolean isFavorite = agencyFavoriteRepository.existsByUserIdAndAgencyId(userId, agencyId);
 

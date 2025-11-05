@@ -7,13 +7,13 @@ import com.salmontaker.sniffy.user.dto.request.UserKeywordUpdateRequest;
 import com.salmontaker.sniffy.user.dto.response.UserKeywordResponse;
 import com.salmontaker.sniffy.user.repository.UserKeywordRepository;
 import com.salmontaker.sniffy.user.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +23,7 @@ public class UserKeywordService {
 
     public List<UserKeywordResponse> getUserKeywords(Integer userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
         List<UserKeyword> keywords = userKeywordRepository.findAllByUserId(user.getId());
 
         return keywords.stream().map(UserKeywordResponse::from).toList();
@@ -32,7 +32,7 @@ public class UserKeywordService {
     @Transactional
     public UserKeywordResponse createUserKeyword(Integer userId, UserKeywordCreateRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
         Integer keywordCount = userKeywordRepository.countByUserId(user.getId());
 
         if (keywordCount >= 5) {
@@ -47,7 +47,7 @@ public class UserKeywordService {
     @Transactional
     public UserKeywordResponse updateUserKeyword(Integer userId, Integer id, UserKeywordUpdateRequest request) {
         UserKeyword keyword = userKeywordRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Keyword not found"));
+                .orElseThrow(() -> new NoSuchElementException("Keyword not found"));
 
         Integer keywordOwnerId = keyword.getUser().getId();
 
@@ -63,7 +63,7 @@ public class UserKeywordService {
     @Transactional
     public UserKeywordResponse deleteUserKeyword(Integer userId, Integer id) {
         UserKeyword keyword = userKeywordRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Keyword not found"));
+                .orElseThrow(() -> new NoSuchElementException("Keyword not found"));
 
         Integer keywordOwnerId = keyword.getUser().getId();
 

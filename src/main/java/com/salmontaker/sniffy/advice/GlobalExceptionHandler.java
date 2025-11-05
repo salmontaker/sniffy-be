@@ -1,8 +1,6 @@
 package com.salmontaker.sniffy.advice;
 
 import com.salmontaker.sniffy.common.ApiResponse;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -68,23 +66,9 @@ public class GlobalExceptionHandler {
         return ApiResponse.error(e.getMessage());
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiResponse<String> handleEntityNotFoundException(EntityNotFoundException e) {
-        log.error(e.getMessage(), e);
-        return ApiResponse.error(e.getMessage());
-    }
-
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ApiResponse<String> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
-        log.error(e.getMessage(), e);
-        return ApiResponse.error(e.getMessage());
-    }
-
-    @ExceptionHandler(EntityExistsException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiResponse<String> handleEntityExistsException(EntityExistsException e) {
         log.error(e.getMessage(), e);
         return ApiResponse.error(e.getMessage());
     }
