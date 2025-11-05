@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -64,8 +65,13 @@ public class FoundItemBatchService {
 
             // 6. 주인을 찾았거나 6개월이 지난 항목 soft delete
             foundItemBatchRepository.deleteFoundOrExpiredItem();
+        } catch (Exception e) {
+            // 7. 예외 발생시 롤백
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            log.error("Sync failed: {}", e.getMessage());
+            return;
         } finally {
-            // 7. 성공/실패 여부와 관계없이 임시 테이블 삭제
+            // 8. 성공/실패 여부와 관계없이 임시 테이블 삭제
             foundItemBatchRepository.dropTempTable();
         }
 
