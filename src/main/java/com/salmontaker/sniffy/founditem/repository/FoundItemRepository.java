@@ -9,9 +9,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Repository
 public interface FoundItemRepository extends JpaRepository<FoundItem, Integer>, JpaSpecificationExecutor<FoundItem> {
     @Override
     @EntityGraph(attributePaths = "agency")
     Page<FoundItem> findAll(Specification<FoundItem> specification, Pageable pageable);
+
+    @EntityGraph(attributePaths = "agency")
+    List<FoundItem> findByCreatedAtBetweenOrderByAtcIdDesc(LocalDateTime createdAtAfter, LocalDateTime createdAtBefore);
 }
