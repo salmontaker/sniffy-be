@@ -50,7 +50,7 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
-        user.delete();
+        user.softDelete();
 
         return UserResponse.from(user);
     }
