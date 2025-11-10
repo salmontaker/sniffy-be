@@ -45,7 +45,7 @@ public class SecurityConfig {
     }
 
     private HttpSecurity applyCommonSettings(HttpSecurity http) throws Exception {
-        return http.cors(cors -> corsConfig())
+        return http.cors(cors -> cors.configurationSource(corsConfig()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(formLogin -> formLogin.disable())
