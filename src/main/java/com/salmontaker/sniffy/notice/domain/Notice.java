@@ -1,4 +1,4 @@
-package com.salmontaker.sniffy.notification.domain;
+package com.salmontaker.sniffy.notice.domain;
 
 import com.salmontaker.sniffy.common.BaseEntity;
 import com.salmontaker.sniffy.user.domain.User;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor
-public class Notification extends BaseEntity {
+public class Notice extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
@@ -31,13 +31,13 @@ public class Notification extends BaseEntity {
     @Column
     LocalDateTime sentAt;
 
-    private Notification(User user, String title, String content) {
+    private Notice(User user, String title, String content) {
         this.user = user;
         this.title = title;
         this.content = content;
     }
 
-    public static Notification create(User user, String title, String content) {
-        return new Notification(user, title, content);
+    public static Notice create(User user, String title, String content) {
+        return new Notice(user, title, content);
     }
 }

@@ -1,14 +1,19 @@
-package com.salmontaker.sniffy.notification.service;
+package com.salmontaker.sniffy.notice.service;
 
+import com.salmontaker.sniffy.common.PageResponse;
 import com.salmontaker.sniffy.founditem.domain.FoundItem;
 import com.salmontaker.sniffy.founditem.repository.FoundItemRepository;
-import com.salmontaker.sniffy.notification.domain.Notification;
-import com.salmontaker.sniffy.notification.repository.NotificationRepository;
+import com.salmontaker.sniffy.notice.domain.Notice;
+import com.salmontaker.sniffy.notice.dto.response.NoticeResponse;
+import com.salmontaker.sniffy.notice.repository.NoticeRepository;
 import com.salmontaker.sniffy.user.domain.User;
 import com.salmontaker.sniffy.user.domain.UserKeyword;
 import com.salmontaker.sniffy.user.repository.UserKeywordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,21 +22,22 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NotificationService {
+public class NoticeService {
     private final UserKeywordRepository userKeywordRepository;
     private final FoundItemRepository foundItemRepository;
-    private final NotificationRepository notificationRepository;
+    private final NoticeRepository noticeRepository;
 
     @Transactional
     public void createKeywordNotification() {
         Map<User, List<UserKeyword>> keywordsMap = getUserKeywordMap();
         List<FoundItem> todayItems = findTodayItems();
-        List<Notification> notifications = new ArrayList<>();
+        List<Notice> notices = new ArrayList<>();
 
         for (Map.Entry<User, List<UserKeyword>> entry : keywordsMap.entrySet()) {
             User user = entry.getKey();
@@ -43,11 +49,11 @@ public class NotificationService {
                     continue;
                 }
 
-                notifications.add(createNotification(user, keyword.getKeyword(), matchedItems));
+                notices.add(createNotification(user, keyword.getKeyword(), matchedItems));
             }
         }
 
-        notificationRepository.saveAll(notifications);
+        noticeRepository.saveAll(notices);
     }
 
     private Map<User, List<UserKeyword>> getUserKeywordMap() {
@@ -71,18 +77,41 @@ public class NotificationService {
                 .toList();
     }
 
-    private Notification createNotification(User user, String keyword, List<FoundItem> matched) {
+    private Notice createNotification(User user, String keyword, List<FoundItem> matched) {
         String title = String.format("[키워드 알림] \"%s\"에 해당하는 물품 수: %d", keyword, matched.size());
         String content = matched.stream()
                 .limit(5)
                 .map(this::summaryItem)
                 .collect(Collectors.joining("\n"));
 
-        return Notification.create(user, title, content);
+        return Notice.create(user, title, content);
     }
 
     private String summaryItem(FoundItem item) {
         String url = String.format("https://www.lost112.go.kr/find/findDetail.do?ATC_ID=%s&FD_SN=%d", item.getAtcId(), item.getFdSn());
         return String.format("%s(%s): %s", item.getAgency().getName(), item.getFdPrdtNm(), url);
+    }
+
+    public PageResponse<NoticeResponse> getNotices(Integer userId, Pageable pageable) {
+        Page<Notice> notices = noticeRepository.findByUserId(userId, pageable);
+        return PageResponse.from(notices.map(NoticeResponse::from));
+    }
+
+    @Transactional
+    public NoticeResponse deleteNotice(Integer userId, Integer noticeId) {
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new NoSuchElementException("Notice not found"));
+
+        Integer noticeOwnerId = notice.getUser().getId();
+
+        if (!userId.equals(noticeOwnerId)) {
+            throw new AccessDeniedException("User id does not match");
+        }
+
+        NoticeResponse response = NoticeResponse.from(notice);
+        
+        noticeRepository.delete(notice);
+
+        return response;
     }
 }
