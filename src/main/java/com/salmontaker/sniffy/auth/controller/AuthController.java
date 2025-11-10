@@ -1,6 +1,7 @@
 package com.salmontaker.sniffy.auth.controller;
 
 import com.salmontaker.sniffy.auth.dto.request.LoginRequest;
+import com.salmontaker.sniffy.auth.dto.response.LoginResponse;
 import com.salmontaker.sniffy.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
-    
+
     @PostMapping("/login")
-    public String login(@Valid @RequestBody LoginRequest request) {
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
     }
 }

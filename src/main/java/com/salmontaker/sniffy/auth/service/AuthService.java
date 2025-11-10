@@ -1,7 +1,9 @@
 package com.salmontaker.sniffy.auth.service;
 
 import com.salmontaker.sniffy.auth.dto.request.LoginRequest;
+import com.salmontaker.sniffy.auth.dto.response.LoginResponse;
 import com.salmontaker.sniffy.user.domain.User;
+import com.salmontaker.sniffy.user.dto.response.UserResponse;
 import com.salmontaker.sniffy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,15 +24,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtEncoder jwtEncoder;
 
-    public String login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid credentials");
         }
-
-        return generateToken(user);
+        
+        return LoginResponse.builder()
+                .user(UserResponse.from(user))
+                .token(generateToken(user))
+                .build();
     }
 
     private String generateToken(User user) {
