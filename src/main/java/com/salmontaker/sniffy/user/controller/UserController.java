@@ -22,6 +22,11 @@ public class UserController {
         return userService.getUser(id);
     }
 
+    @GetMapping("/me")
+    public UserResponse getCurrentUser(@AuthenticationPrincipal Integer id) {
+        return userService.getUser(id);
+    }
+
     @PostMapping
     public UserResponse createUser(@Valid @RequestBody UserCreateRequest request) {
         return userService.registerUser(request);

@@ -43,7 +43,6 @@ public class AuthService {
         JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .subject(String.valueOf(user.getId()))
-                .claim("nickname", user.getNickname())
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(3600L))
                 .build();
