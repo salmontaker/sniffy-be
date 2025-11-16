@@ -22,14 +22,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse<String> handleIllegalArgumentException(IllegalArgumentException e) {
-        log.error(e.getMessage(), e);
+        log.warn(e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        log.error(e.getMessage(), e);
+        log.warn(e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
@@ -42,49 +42,49 @@ public class GlobalExceptionHandler {
                 .map(error -> String.format("%s: %s", error.getField(), error.getDefaultMessage()))
                 .toList();
 
-        log.error(e.getMessage(), e);
+        log.warn(e.getMessage());
         return ApiResponse.error(String.join(", ", errors));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ApiResponse<String> handleBadCredentialsException(BadCredentialsException e) {
-        log.error(e.getMessage(), e);
+        log.warn(e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ApiResponse<String> handleAccessDeniedException(AccessDeniedException e) {
-        log.error(e.getMessage(), e);
+        log.warn(e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiResponse<String> handleNoSuchElementException(NoSuchElementException e) {
-        log.error(e.getMessage(), e);
+        log.warn(e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiResponse<String> handleNoResourceFoundException(NoResourceFoundException e) {
-        log.error(e.getMessage(), e);
+        log.warn(e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ApiResponse<String> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
-        log.error(e.getMessage(), e);
+        log.warn(e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiResponse<String> handleIllegalStateException(IllegalStateException e) {
-        log.error(e.getMessage(), e);
+        log.warn(e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
