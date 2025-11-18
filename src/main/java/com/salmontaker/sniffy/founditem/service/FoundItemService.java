@@ -30,7 +30,7 @@ public class FoundItemService {
 
     public List<FoundItemResponse> getRandomTodayItems() {
         LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
-        List<FoundItem> todayItems = foundItemRepository.findToday(startOfToday);
+        List<FoundItem> todayItems = foundItemRepository.findTodayWithImage(startOfToday);
 
         Collections.shuffle(todayItems);
 

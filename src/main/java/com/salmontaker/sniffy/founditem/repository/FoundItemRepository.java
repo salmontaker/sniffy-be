@@ -27,4 +27,13 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Integer>, 
             ORDER BY f.atcId DESC
             """)
     List<FoundItem> findToday(@Param("startOfToday") LocalDateTime startOfToday);
+
+    @EntityGraph(attributePaths = "agency")
+    @Query("""
+            SELECT f FROM FoundItem f
+            WHERE f.createdAt >= :startOfToday
+            AND f.fdFilePathImg NOT LIKE '%no_img.gif'
+            ORDER BY f.atcId DESC
+            """)
+    List<FoundItem> findTodayWithImage(@Param("startOfToday") LocalDateTime startOfToday);
 }
