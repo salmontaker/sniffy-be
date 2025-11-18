@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/found-items")
 @RequiredArgsConstructor
@@ -22,5 +24,10 @@ public class FoundItemController {
     public PageResponse<FoundItemResponse> getFoundItems(@ModelAttribute FoundItemRequest request,
                                                          @PageableDefault Pageable pageable) {
         return foundItemService.getFoundItems(request, pageable);
+    }
+
+    @GetMapping("/samples")
+    public List<FoundItemResponse> getRandomTodayItems() {
+        return foundItemService.getRandomTodayItems();
     }
 }

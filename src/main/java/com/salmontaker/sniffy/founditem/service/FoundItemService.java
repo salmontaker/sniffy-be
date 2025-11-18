@@ -12,6 +12,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -21,5 +26,18 @@ public class FoundItemService {
     public PageResponse<FoundItemResponse> getFoundItems(FoundItemRequest request, Pageable pageable) {
         Page<FoundItem> foundItems = foundItemRepository.findAll(FoundItemSpecs.withFilter(request), pageable);
         return PageResponse.from(foundItems.map(FoundItemResponse::from));
+    }
+
+    public List<FoundItemResponse> getRandomTodayItems() {
+        LocalDateTime start = LocalDate.now().atStartOfDay();
+        LocalDateTime end = start.plusDays(1);
+
+        List<FoundItem> todayItems = foundItemRepository.findByCreatedAtBetweenOrderByAtcIdDesc(start, end);
+        Collections.shuffle(todayItems);
+
+        return todayItems.stream()
+                .limit(6)
+                .map(FoundItemResponse::from)
+                .toList();
     }
 }
