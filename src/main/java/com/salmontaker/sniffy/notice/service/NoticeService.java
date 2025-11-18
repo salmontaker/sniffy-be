@@ -63,10 +63,8 @@ public class NoticeService {
     }
 
     private List<FoundItem> findTodayItems() {
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = start.plusDays(1);
-
-        return foundItemRepository.findByCreatedAtBetweenOrderByAtcIdDesc(start, end);
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+        return foundItemRepository.findToday(startOfToday);
     }
 
     private List<FoundItem> findMatchedItems(List<FoundItem> items, String keyword) {

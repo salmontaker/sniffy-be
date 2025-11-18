@@ -29,10 +29,9 @@ public class FoundItemService {
     }
 
     public List<FoundItemResponse> getRandomTodayItems() {
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = start.plusDays(1);
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+        List<FoundItem> todayItems = foundItemRepository.findToday(startOfToday);
 
-        List<FoundItem> todayItems = foundItemRepository.findByCreatedAtBetweenOrderByAtcIdDesc(start, end);
         Collections.shuffle(todayItems);
 
         return todayItems.stream()

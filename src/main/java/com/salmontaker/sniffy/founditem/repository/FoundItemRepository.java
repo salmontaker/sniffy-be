@@ -7,6 +7,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -19,5 +21,10 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Integer>, 
     Page<FoundItem> findAll(Specification<FoundItem> specification, Pageable pageable);
 
     @EntityGraph(attributePaths = "agency")
-    List<FoundItem> findByCreatedAtBetweenOrderByAtcIdDesc(LocalDateTime createdAtAfter, LocalDateTime createdAtBefore);
+    @Query("""
+            SELECT f FROM FoundItem f
+            WHERE f.createdAt >= :startOfToday
+            ORDER BY f.atcId DESC
+            """)
+    List<FoundItem> findToday(@Param("startOfToday") LocalDateTime startOfToday);
 }
