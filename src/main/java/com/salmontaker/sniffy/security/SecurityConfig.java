@@ -59,7 +59,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
         applyCommonSettings(http);
-        return http.securityMatcher("/api/user", "/api/auth/login", "/api/agency", "/api/found-items")
+        return http.securityMatcher("/api/user", "/api/auth/login", "/api/agency", "/api/found-items", "/api/stats/**")
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                         .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.GET, "/api/user/\\d+")).permitAll()
@@ -67,6 +67,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/agency").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/agency/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/found-items").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/stats/**").permitAll()
                         .anyRequest().denyAll()
                 )
                 .build();

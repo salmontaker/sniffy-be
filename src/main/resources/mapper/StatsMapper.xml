@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.salmontaker.sniffy.stats.mapper.StatsMapper">
+    <select id="foundItemTotals">
+        SELECT SUM(created_at >= #{today}) AS todayTotal,
+               SUM(created_at >= #{week}) AS weekTotal,
+               SUM(created_at >= #{month}) AS monthTotal,
+               GREATEST(
+                       COALESCE(MAX(created_at), '0000-00-00'),
+                       COALESCE(MAX(updated_at), '0000-00-00'),
+                       COALESCE(MAX(deleted_at), '0000-00-00')
+               ) AS lastUpdated
+        FROM found_item
+    </select>
+
+    <select id="top5Agencies">
+        SELECT a.id, a.name, COUNT(*) AS todayTotal
+        FROM agency a
+             LEFT JOIN found_item fi ON a.id = fi.agency_id
+        WHERE fi.created_at >= CURDATE()
+        GROUP BY a.id
+        ORDER BY todayTotal DESC
+        LIMIT 5
+    </select>
+
+    <select id="top5Categories">
+        SELECT prdt_cl_nm AS category, COUNT(*) AS todayTotal
+        FROM found_item
+        WHERE created_at >= CURDATE()
+        GROUP BY prdt_cl_nm
+        ORDER BY todayTotal DESC
+        LIMIT 5
+    </select>
+</mapper>
