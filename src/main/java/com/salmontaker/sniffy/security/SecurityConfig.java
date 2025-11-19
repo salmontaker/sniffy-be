@@ -59,13 +59,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
         applyCommonSettings(http);
-        return http.securityMatcher("/api/user", "/api/auth/login", "/api/agency", "/api/found-items", "/api/found-items/samples", "/api/stats/**")
+        return http.securityMatcher("/api/users", "/api/auth/login", "/api/agencies", "/api/found-items", "/api/found-items/samples", "/api/stats/**")
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
-                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.GET, "/api/user/\\d+")).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.GET, "/api/users/\\d+")).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/agency").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/agency/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/agencies").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/agencies/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/found-items").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/found-items/samples").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/stats/**").permitAll()
@@ -79,13 +79,13 @@ public class SecurityConfig {
         applyCommonSettings(http);
         return http.securityMatcher("/api/**")
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/user/**").authenticated()
+                        .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
-                        .requestMatchers("/api/agency/**").authenticated()
+                        .requestMatchers("/api/agencies/**").authenticated()
                         .requestMatchers("/api/found-items/**").authenticated()
-                        .requestMatchers("/api/keyword/**").authenticated()
-                        .requestMatchers("/api/notice/**").authenticated()
-                        .requestMatchers("/api/push-subscription/**").authenticated()
+                        .requestMatchers("/api/keywords/**").authenticated()
+                        .requestMatchers("/api/notices/**").authenticated()
+                        .requestMatchers("/api/push-subscriptions/**").authenticated()
                         .anyRequest().denyAll())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter((jwtToken -> {
                             String sub = jwtToken.getSubject();

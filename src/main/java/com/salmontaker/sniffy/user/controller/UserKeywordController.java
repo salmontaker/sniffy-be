@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/keyword")
+@RequestMapping("api/keywords")
 @RequiredArgsConstructor
 public class UserKeywordController {
     private final UserKeywordService userKeywordService;

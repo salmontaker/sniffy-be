@@ -11,7 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/push-subscription")
+@RequestMapping("api/push-subscriptions")
 @RequiredArgsConstructor
 public class PushSubscriptionController {
     private final PushSubscriptionService subscriptionService;
