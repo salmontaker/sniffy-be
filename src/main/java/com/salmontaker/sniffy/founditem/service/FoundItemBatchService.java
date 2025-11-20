@@ -104,7 +104,7 @@ public class FoundItemBatchService {
 
     private Flux<LostFoundResponse> fetchAllPages(String startDate, String endDate, int totalPages) {
         return Flux.range(1, totalPages)
-                .delayElements(Duration.ofSeconds(3))
+                .delayElements(Duration.ofSeconds(15))
                 .flatMap(page -> foundItemClient.fetchData(startDate, endDate, page, NUM_OF_ROWS)
                                 .doOnSubscribe(sub -> log.info("Requesting page {}", page))
                                 .retryWhen(defaultRetry("page " + page)),
@@ -112,7 +112,7 @@ public class FoundItemBatchService {
     }
 
     private Retry defaultRetry(String context) {
-        return Retry.backoff(RETRY_COUNT, Duration.ofSeconds(2))
+        return Retry.backoff(RETRY_COUNT, Duration.ofSeconds(15))
                 .doBeforeRetry(signal ->
                         log.warn("Retrying {} (attempt #{}) due to {}",
                                 context,
