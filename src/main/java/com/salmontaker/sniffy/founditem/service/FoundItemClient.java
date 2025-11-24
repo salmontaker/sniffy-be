@@ -2,9 +2,11 @@ package com.salmontaker.sniffy.founditem.service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.salmontaker.sniffy.common.OpenApiResponse;
 import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
@@ -18,7 +20,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class FoundItemClient {
     private final WebClient webClient;
-    
+
     private final String baseURL = "https://apis.data.go.kr/1320000";
     private final String endpoint = "/LosfundInfoInqireService/getLosfundInfoAccToClAreaPd";
 
@@ -51,7 +53,7 @@ public class FoundItemClient {
                 .build();
     }
 
-    public Mono<LostFoundResponse> fetchData(String startDate, String endDate, int pageNo, int numOfRows) {
+    public Mono<OpenApiResponse<LostFoundResponse>> fetchData(String startDate, String endDate, int pageNo, int numOfRows) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(endpoint)
@@ -62,6 +64,7 @@ public class FoundItemClient {
                         .queryParam("numOfRows", numOfRows)
                         .build())
                 .retrieve()
-                .bodyToMono(LostFoundResponse.class);
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
     }
 }

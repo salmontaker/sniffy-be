@@ -38,7 +38,7 @@ public class FoundItemBatchRepository {
         jdbc.execute("ALTER TABLE temp_found_item ADD COLUMN dep_place VARCHAR(100)");
     }
 
-    public void insertTempTable(List<LostFoundResponse.Item> items) {
+    public void insertTempTable(List<LostFoundResponse> items) {
         String sql = """
                 INSERT INTO temp_found_item 
                     (atc_id, clr_nm, dep_place, fd_file_path_img, fd_prdt_nm, fd_sbjt, fd_sn, fd_ymd, prdt_cl_nm)
@@ -49,7 +49,7 @@ public class FoundItemBatchRepository {
         jdbc.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                LostFoundResponse.Item item = items.get(i);
+                LostFoundResponse item = items.get(i);
                 ps.setString(1, item.getAtcId());
                 ps.setString(2, item.getClrNm());
                 ps.setString(3, item.getDepPlace());

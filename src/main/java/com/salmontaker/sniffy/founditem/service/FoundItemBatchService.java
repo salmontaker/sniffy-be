@@ -1,5 +1,6 @@
 package com.salmontaker.sniffy.founditem.service;
 
+import com.salmontaker.sniffy.common.OpenApiResponse;
 import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundResponse;
 import com.salmontaker.sniffy.founditem.repository.FoundItemBatchRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,16 +40,16 @@ public class FoundItemBatchService {
 
         try {
             // 2. 비동기 Flux 파이프라인 정의 (아직 실행 안 됨)
-            Flux<LostFoundResponse.Item> itemFlux = fetchAllItems(startDate, endDate);
+            Flux<LostFoundResponse> itemFlux = fetchAllItems(startDate, endDate);
 
             // 3. Flux를 청크(List<Item>) 단위의 '블로킹' Iterable로 변환
-            Iterable<List<LostFoundResponse.Item>> itemChunks = itemFlux.buffer(NUM_OF_ROWS)
+            Iterable<List<LostFoundResponse>> itemChunks = itemFlux.buffer(NUM_OF_ROWS)
                     .toIterable();
 
             int totalInserted = 0;
 
             // 4. 청크 단위로 반복하며 DB에 삽입
-            for (List<LostFoundResponse.Item> chunk : itemChunks) {
+            for (List<LostFoundResponse> chunk : itemChunks) {
                 if (chunk.isEmpty()) {
                     continue;
                 }
@@ -79,10 +80,10 @@ public class FoundItemBatchService {
         // (메서드 종료 시 트랜잭션 커밋)
     }
 
-    private Flux<LostFoundResponse.Item> fetchAllItems(String startDate, String endDate) {
+    private Flux<LostFoundResponse> fetchAllItems(String startDate, String endDate) {
         return fetchTotalCount(startDate, endDate)
                 .flatMapMany(totalPages -> fetchAllPages(startDate, endDate, totalPages))
-                .flatMapIterable(LostFoundResponse::getItems);
+                .flatMapIterable(OpenApiResponse::getItems);
     }
 
     private Mono<Integer> fetchTotalCount(String startDate, String endDate) {
@@ -102,7 +103,7 @@ public class FoundItemBatchService {
                 .retryWhen(defaultRetry("fetchTotalCount"));
     }
 
-    private Flux<LostFoundResponse> fetchAllPages(String startDate, String endDate, int totalPages) {
+    private Flux<OpenApiResponse<LostFoundResponse>> fetchAllPages(String startDate, String endDate, int totalPages) {
         return Flux.range(1, totalPages)
                 .delayElements(Duration.ofSeconds(15))
                 .flatMap(page -> foundItemClient.fetchData(startDate, endDate, page, NUM_OF_ROWS)
