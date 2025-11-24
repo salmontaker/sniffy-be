@@ -11,7 +11,12 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDate;
 
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(name = "unique_atc_id_fd_sn", columnNames = {"atcId", "fdSn"})})
+@Table(indexes = {
+        @Index(name = "index_clr_nm", columnList = "clrNm"),
+        @Index(name = "index_fd_ymd", columnList = "fdYmd"),
+        @Index(name = "index_prdt_cl_nm", columnList = "prdtClNm")},
+        uniqueConstraints = {@UniqueConstraint(name = "unique_atc_id_fd_sn", columnNames = {"atcId", "fdSn"})}
+)
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

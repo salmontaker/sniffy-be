@@ -6,7 +6,6 @@ import java.time.LocalDate;
 
 @Data
 public class FoundItemRequest {
-    private Integer id;
     private String agencyName;
     private String clrNm;
     private String fdPrdtNm;

@@ -14,30 +14,23 @@ public class FoundItemSpecs {
     public static Specification<FoundItem> withFilter(FoundItemRequest request) {
         Specification<FoundItem> spec = (root, query, cb) -> cb.conjunction();
 
-        if (request.getId() != null) {
-            spec = spec.and(idEq(request.getId()));
-        }
         if (StringUtils.hasText(request.getAgencyName())) {
-            spec = spec.and(agencyNameContains(request.getAgencyName()));
+            spec = spec.and(agencyNameContains(request.getAgencyName().strip()));
         }
         if (StringUtils.hasText(request.getClrNm())) {
-            spec = spec.and(clrNmContains(request.getClrNm()));
+            spec = spec.and(clrNmEquals(request.getClrNm().strip()));
         }
         if (StringUtils.hasText(request.getFdPrdtNm())) {
-            spec = spec.and(fdPrdtNmContains(request.getFdPrdtNm()));
+            spec = spec.and(fdPrdtNmContains(request.getFdPrdtNm().strip()));
         }
         if (StringUtils.hasText(request.getPrdtClNm())) {
-            spec = spec.and(prdtClNmContains(request.getPrdtClNm()));
+            spec = spec.and(prdtClNmContains(request.getPrdtClNm().strip()));
         }
         if (request.getStartDate() != null || request.getEndDate() != null) {
             spec = spec.and(fdYmdBetween(request.getStartDate(), request.getEndDate()));
         }
 
         return spec;
-    }
-    
-    private static Specification<FoundItem> idEq(Integer id) {
-        return (root, query, cb) -> cb.equal(root.get("id"), id);
     }
 
     private static Specification<FoundItem> agencyNameContains(String agencyName) {
@@ -47,8 +40,8 @@ public class FoundItemSpecs {
         };
     }
 
-    private static Specification<FoundItem> clrNmContains(String clrNm) {
-        return (root, query, cb) -> cb.like(root.get("clrNm"), "%" + clrNm + "%");
+    private static Specification<FoundItem> clrNmEquals(String clrNm) {
+        return (root, query, cb) -> cb.equal(root.get("clrNm"), clrNm);
     }
 
     private static Specification<FoundItem> fdPrdtNmContains(String fdPrdtNm) {
@@ -56,7 +49,7 @@ public class FoundItemSpecs {
     }
 
     private static Specification<FoundItem> prdtClNmContains(String prdtClNm) {
-        return (root, query, cb) -> cb.like(root.get("prdtClNm"), "%" + prdtClNm + "%");
+        return (root, query, cb) -> cb.like(root.get("prdtClNm"), prdtClNm + "%");
     }
 
     private static Specification<FoundItem> fdYmdBetween(LocalDate startDate, LocalDate endDate) {
