@@ -3,6 +3,7 @@ package com.salmontaker.sniffy.founditem.service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.salmontaker.sniffy.common.OpenApiResponse;
+import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundDetailResponse;
 import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,8 +22,11 @@ import reactor.core.publisher.Mono;
 public class FoundItemClient {
     private final WebClient webClient;
 
-    private final String baseURL = "https://apis.data.go.kr/1320000";
-    private final String endpoint = "/LosfundInfoInqireService/getLosfundInfoAccToClAreaPd";
+    private final String BASE_URL = "https://apis.data.go.kr/1320000";
+    private final String LOST_FOUND_SERVICE_PATH = "/LosfundInfoInqireService";
+
+    private final String LOST_FOUND_LIST_PATH = LOST_FOUND_SERVICE_PATH + "/getLosfundInfoAccToClAreaPd";
+    private final String LOST_FOUND_DETAIL_PATH = LOST_FOUND_SERVICE_PATH + "/getLosfundDetailInfo";
 
     @Value("${data.go.kr.api.key}")
     private String serviceKey;
@@ -45,7 +49,7 @@ public class FoundItemClient {
                 .build();
 
         this.webClient = WebClient.builder()
-                .uriBuilderFactory(new DefaultUriBuilderFactory(baseURL) {{
+                .uriBuilderFactory(new DefaultUriBuilderFactory(BASE_URL) {{
                     setEncodingMode(EncodingMode.NONE); // Encoding 키를 사용하므로 NONE
                 }})
                 .exchangeStrategies(strategies)
@@ -53,15 +57,28 @@ public class FoundItemClient {
                 .build();
     }
 
-    public Mono<OpenApiResponse<LostFoundResponse>> fetchData(String startDate, String endDate, int pageNo, int numOfRows) {
+    public Mono<OpenApiResponse<LostFoundResponse>> fetchItemList(String startDate, String endDate, int pageNo, int numOfRows) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(endpoint)
+                        .path(LOST_FOUND_LIST_PATH)
                         .queryParam("serviceKey", serviceKey)
                         .queryParam("START_YMD", startDate)
                         .queryParam("END_YMD", endDate)
                         .queryParam("pageNo", pageNo)
                         .queryParam("numOfRows", numOfRows)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    public Mono<OpenApiResponse<LostFoundDetailResponse>> fetchItemDetail(String atcId, int fdSn) {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(LOST_FOUND_DETAIL_PATH)
+                        .queryParam("serviceKey", serviceKey)
+                        .queryParam("ATC_ID", atcId)
+                        .queryParam("FD_SN", fdSn)
                         .build())
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<>() {

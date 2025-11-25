@@ -23,17 +23,21 @@ public class OpenApiResponse<T> {
 
     @Data
     public static class Body<T> {
+        // Case 1: 목록 조회용 (items 래퍼가 있고, 페이징 정보가 있음)
         private Items<T> items;
-        private int numOfRows;
-        private int pageNo;
-        private int totalCount;
+        private Integer numOfRows;
+        private Integer pageNo;
+        private Integer totalCount;
+
+        // Case 2: 상세 조회용 (items 래퍼 없이 바로 객체가 옴)
+        private T item;
     }
 
     @Data
     public static class Items<T> {
         private List<T> item;
     }
-    
+
     public boolean isSuccess() {
         return Optional.ofNullable(getHeader())
                 .map(Header::getResultCode)
@@ -59,5 +63,12 @@ public class OpenApiResponse<T> {
                 .map(Body::getItems)
                 .map(Items::getItem)
                 .orElse(List.of());
+    }
+
+    public T getItem() {
+        return Optional.ofNullable(response)
+                .map(Response::getBody)
+                .map(Body::getItem)
+                .orElse(null);
     }
 }

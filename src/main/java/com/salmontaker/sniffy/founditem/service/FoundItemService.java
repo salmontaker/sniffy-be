@@ -1,8 +1,11 @@
 package com.salmontaker.sniffy.founditem.service;
 
+import com.salmontaker.sniffy.common.OpenApiResponse;
 import com.salmontaker.sniffy.common.PageResponse;
 import com.salmontaker.sniffy.founditem.domain.FoundItem;
+import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundDetailResponse;
 import com.salmontaker.sniffy.founditem.dto.internal.request.FoundItemRequest;
+import com.salmontaker.sniffy.founditem.dto.internal.response.FoundItemDetailResponse;
 import com.salmontaker.sniffy.founditem.dto.internal.response.FoundItemResponse;
 import com.salmontaker.sniffy.founditem.repository.FoundItemRepository;
 import com.salmontaker.sniffy.founditem.repository.FoundItemSpecs;
@@ -18,12 +21,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FoundItemService {
     private final FoundItemRepository foundItemRepository;
+    private final FoundItemClient foundItemClient;
 
     public PageResponse<FoundItemResponse> getFoundItems(FoundItemRequest request, Pageable pageable) {
         if (pageable.getSort().isUnsorted()) {
@@ -34,6 +39,23 @@ public class FoundItemService {
         }
         Page<FoundItem> foundItems = foundItemRepository.findAll(FoundItemSpecs.withFilter(request), pageable);
         return PageResponse.from(foundItems.map(FoundItemResponse::from));
+    }
+
+    public FoundItemDetailResponse getFoundItemDetail(Integer id) {
+        FoundItem foundItem = foundItemRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Item not found"));
+
+        LostFoundDetailResponse response = foundItemClient.fetchItemDetail(foundItem.getAtcId(), foundItem.getFdSn())
+                .map(OpenApiResponse::getItem)
+                .block();
+
+        if (response == null) {
+            throw new NoSuchElementException("Item not found");
+        }
+
+        response.setUniq(response.getUniq().replaceFirst("내용", "").strip());
+
+        return FoundItemDetailResponse.from(response);
     }
 
     public List<FoundItemResponse> getRandomTodayItems() {

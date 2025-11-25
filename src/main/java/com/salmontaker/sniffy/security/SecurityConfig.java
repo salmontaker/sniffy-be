@@ -59,7 +59,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
         applyCommonSettings(http);
-        return http.securityMatcher("/api/users", "/api/auth/login", "/api/agencies", "/api/found-items", "/api/found-items/samples", "/api/stats/**")
+        return http.securityMatcher("/api/users", "/api/auth/login", "/api/agencies", "/api/found-items", "/api/found-items/**", "/api/stats/**")
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.GET, "/api/users/\\d+")).permitAll()
@@ -67,7 +67,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/agencies").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/agencies/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/found-items").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/found-items/samples").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/found-items/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/stats/**").permitAll()
                         .anyRequest().denyAll()
                 )
@@ -82,7 +82,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers("/api/agencies/**").authenticated()
-                        .requestMatchers("/api/found-items/**").authenticated()
                         .requestMatchers("/api/keywords/**").authenticated()
                         .requestMatchers("/api/notices/**").authenticated()
                         .requestMatchers("/api/push-subscriptions/**").authenticated()
