@@ -20,35 +20,35 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(length = 255)
-    private String email;
+    @Column(length = 50)
+    private String username;
 
     @Column(length = 255)
     private String password;
 
     @Column(length = 50)
     private String nickname;
-    
+
     @OneToMany(mappedBy = "user")
     private List<AgencyFavorite> favorites = new ArrayList<>();
 
-    private User(String email, String password, String nickname) {
-        // 이메일과 비밀번호는 null을 허용 (OAuth 계정)
+    private User(String username, String password, String nickname) {
+        // 아이디와 비밀번호는 null을 허용 (OAuth 계정 추가 예정)
         if (nickname == null) {
             throw new IllegalArgumentException("Nickname is null");
         }
 
-        this.email = email;
+        this.username = username;
         this.password = password;
         this.nickname = nickname;
     }
 
-    public static User create(String email, String password, String nickname) {
-        return new User(email, password, nickname);
+    public static User create(String username, String password, String nickname) {
+        return new User(username, password, nickname);
     }
 
-    public void update(String email, String password, String nickname) {
-        if (email != null) this.email = email;
+    public void update(String username, String password, String nickname) {
+        if (username != null) this.username = username;
         if (password != null) this.password = password;
         if (nickname != null) this.nickname = nickname;
     }

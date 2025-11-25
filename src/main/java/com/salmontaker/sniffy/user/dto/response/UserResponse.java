@@ -8,13 +8,13 @@ import lombok.Data;
 @Builder
 public class UserResponse {
     private Integer id;
-    private String email;
+    private String username;
     private String nickname;
 
     public static UserResponse from(User user) {
         return UserResponse.builder()
                 .id(user.getId())
-                .email(user.getEmail())
+                .username(user.getUsername())
                 .nickname(user.getNickname())
                 .build();
     }

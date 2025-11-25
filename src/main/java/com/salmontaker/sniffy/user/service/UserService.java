@@ -27,9 +27,9 @@ public class UserService {
 
     @Transactional
     public UserResponse registerUser(UserCreateRequest request) {
-        User user = User.create(request.getEmail(), passwordEncoder.encode(request.getPassword()), request.getNickname());
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalStateException("Email already exists");
+        User user = User.create(request.getUsername(), passwordEncoder.encode(request.getPassword()), request.getNickname());
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new IllegalStateException("Username already exists");
         }
 
         return UserResponse.from(userRepository.save(user));
@@ -40,7 +40,7 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
-        user.update(request.getEmail(), passwordEncoder.encode(request.getPassword()), request.getNickname());
+        user.update(request.getUsername(), passwordEncoder.encode(request.getPassword()), request.getNickname());
 
         return UserResponse.from(user);
     }
