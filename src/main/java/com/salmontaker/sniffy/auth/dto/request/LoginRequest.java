@@ -1,13 +1,14 @@
 package com.salmontaker.sniffy.auth.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import com.salmontaker.sniffy.user.validation.Password;
+import com.salmontaker.sniffy.user.validation.Username;
 import lombok.Data;
 
 @Data
 public class LoginRequest {
-    @NotBlank
+    @Username
     private String username;
 
-    @NotBlank
+    @Password
     private String password;
 }
