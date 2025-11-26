@@ -22,7 +22,7 @@ public class FoundItemBatchRepository {
                 SELECT EXISTS(
                     SELECT 1
                     FROM found_item
-                    WHERE DATE(COALESCE(updated_at, created_at, deleted_at)) = CURDATE()
+                    WHERE DATE(created_at) = CURDATE()
                 )
                 """;
 
