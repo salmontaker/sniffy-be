@@ -22,7 +22,9 @@ public class FoundItemBatchRepository {
                 SELECT EXISTS(
                     SELECT 1
                     FROM found_item
-                    WHERE DATE(created_at) = CURDATE()
+                    WHERE created_at >= CURDATE()
+                       OR updated_at >= CURDATE()
+                       OR deleted_at >= CURDATE()
                 )
                 """;
 

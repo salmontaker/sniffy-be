@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 public class FoundItemScheduler {
     private final FoundItemBatchService foundItemBatchService;
 
-    @Scheduled(cron = "0 */10 0-5 * * *")
+    @Scheduled(cron = "0 */10 2-4 * * *")
     public void syncExternalData() {
         LocalDate end = LocalDate.now();
         LocalDate start = end.minusMonths(6);
