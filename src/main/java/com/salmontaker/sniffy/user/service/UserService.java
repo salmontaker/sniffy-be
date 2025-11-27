@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.NoSuchElementException;
 
@@ -27,10 +28,14 @@ public class UserService {
 
     @Transactional
     public UserResponse registerUser(UserCreateRequest request) {
-        User user = User.create(request.getUsername(), passwordEncoder.encode(request.getPassword()), request.getNickname());
-        if (userRepository.existsByUsername(user.getUsername())) {
+        // 아이디 중복여부 확인
+        if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalStateException("Username already exists");
         }
+
+        User user = User.create(request.getUsername(),
+                passwordEncoder.encode(request.getPassword()),
+                request.getNickname());
 
         return UserResponse.from(userRepository.save(user));
     }
@@ -40,7 +45,11 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
-        user.update(request.getUsername(), passwordEncoder.encode(request.getPassword()), request.getNickname());
+        // 비밀번호 업데이트 안하는 경우에 null 들어가면 Encoder에서 Exception 발생
+        String password = StringUtils.hasText(request.getPassword()) ?
+                passwordEncoder.encode(request.getPassword()) : null;
+
+        user.update(request.getNickname(), password);
 
         return UserResponse.from(user);
     }
