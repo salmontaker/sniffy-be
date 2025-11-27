@@ -3,6 +3,7 @@ package com.salmontaker.sniffy.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,7 +13,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -57,24 +57,21 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Order(1)
     public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
         applyCommonSettings(http);
-        return http.securityMatcher("/api/users", "/api/auth/login", "/api/agencies", "/api/found-items", "/api/found-items/**", "/api/stats/**")
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers(RegexRequestMatcher.regexMatcher(HttpMethod.GET, "/api/users/\\d+")).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/agencies").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/agencies/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/found-items").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/found-items/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/stats/**").permitAll()
-                        .anyRequest().denyAll()
-                )
+        return http.securityMatchers(matchers -> matchers
+                        .requestMatchers(HttpMethod.POST, "/api/users")
+                        .requestMatchers(HttpMethod.GET, "/api/users/{id:\\d+}")
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login")
+                        .requestMatchers(HttpMethod.GET, "/api/agencies", "/api/agencies/*")
+                        .requestMatchers(HttpMethod.GET, "/api/found-items", "/api/found-items/**")
+                        .requestMatchers(HttpMethod.GET, "/api/stats/**"))
                 .build();
     }
 
     @Bean
+    @Order(2)
     public SecurityFilterChain protectedChain(HttpSecurity http) throws Exception {
         applyCommonSettings(http);
         return http.securityMatcher("/api/**")
