@@ -15,8 +15,9 @@ public class AgencyResponse {
     private String telNo;
     private BigDecimal latitude;
     private BigDecimal longitude;
+    private Boolean isFavorite;
 
-    public static AgencyResponse from(Agency agency) {
+    public static AgencyResponse from(Agency agency, Boolean isFavorite) {
         return AgencyResponse.builder()
                 .id(agency.getId())
                 .name(agency.getName())
@@ -24,6 +25,7 @@ public class AgencyResponse {
                 .telNo(agency.getTelNo())
                 .latitude(agency.getLatitude())
                 .longitude(agency.getLongitude())
+                .isFavorite(isFavorite)
                 .build();
     }
 }

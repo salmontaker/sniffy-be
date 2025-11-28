@@ -18,14 +18,16 @@ import java.util.List;
 public class AgencyController {
     private final AgencyService agencyService;
 
-    @GetMapping("/{id}")
-    public AgencyResponse getAgency(@PathVariable Integer id) {
-        return agencyService.getAgency(id);
+    @GetMapping("/{agencyId}")
+    public AgencyResponse getAgency(@AuthenticationPrincipal Integer userId,
+                                    @PathVariable Integer agencyId) {
+        return agencyService.getAgency(userId, agencyId);
     }
 
     @GetMapping
-    public List<AgencyResponse> getAgencies(@ModelAttribute AgencySearchRequest request) {
-        return agencyService.getAgencies(request);
+    public List<AgencyResponse> getAgencies(@AuthenticationPrincipal Integer userId,
+                                            @ModelAttribute AgencySearchRequest request) {
+        return agencyService.getAgencies(userId, request);
     }
 
     @GetMapping("/favorites")
@@ -35,8 +37,14 @@ public class AgencyController {
     }
 
     @PostMapping("/favorites/{agencyId}")
-    public Boolean postToggleFavorite(@AuthenticationPrincipal Integer userId,
-                                      @PathVariable Integer agencyId) {
-        return agencyService.toggleFavorite(userId, agencyId);
+    public void addFavorite(@AuthenticationPrincipal Integer userId,
+                            @PathVariable Integer agencyId) {
+        agencyService.addFavorite(userId, agencyId);
+    }
+
+    @DeleteMapping("/favorites/{agencyId}")
+    public void removeFavorite(@AuthenticationPrincipal Integer userId,
+                               @PathVariable Integer agencyId) {
+        agencyService.removeFavorite(userId, agencyId);
     }
 }

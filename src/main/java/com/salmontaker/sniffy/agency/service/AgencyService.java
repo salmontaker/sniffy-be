@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -27,48 +28,57 @@ public class AgencyService {
     private final AgencyRepository agencyRepository;
     private final AgencyFavoriteRepository agencyFavoriteRepository;
 
-    public AgencyResponse getAgency(Integer id) {
-        Agency agency = agencyRepository.findById(id)
+    public AgencyResponse getAgency(Integer userId, Integer agencyId) {
+        Agency agency = agencyRepository.findById(agencyId)
                 .orElseThrow(() -> new NoSuchElementException("Agency not found"));
 
-        return AgencyResponse.from(agency);
+        boolean isFavorite = false;
+        if (userId != null) {
+            isFavorite = agencyFavoriteRepository.existsByUserIdAndAgencyId(userId, agencyId);
+        }
+
+        return AgencyResponse.from(agency, isFavorite);
     }
 
-    public List<AgencyResponse> getAgencies(AgencySearchRequest request) {
+    public List<AgencyResponse> getAgencies(Integer userId, AgencySearchRequest request) {
         List<Agency> agencies = agencyRepository.findAllByLatitudeBetweenAndLongitudeBetween(
                 request.getMinLatitude(),
                 request.getMaxLatitude(),
                 request.getMinLongitude(),
                 request.getMaxLongitude());
 
+        Set<Integer> favoriteIds = (userId == null)
+                ? Set.of()
+                : Set.copyOf(agencyFavoriteRepository.findAgencyIdByUserId(userId));
+
         return agencies.stream()
-                .map(AgencyResponse::from)
+                .map(agency -> AgencyResponse.from(agency, favoriteIds.contains(agency.getId())))
                 .toList();
     }
 
     public PageResponse<AgencyResponse> getFavoriteAgencies(Integer userId, Pageable pageable) {
-        Page<AgencyFavorite> agencyFavorites = agencyFavoriteRepository.findAllByUserId(userId, pageable);
-        Page<Agency> agencies = agencyFavorites.map(AgencyFavorite::getAgency);
-
-        return PageResponse.from(agencies.map(AgencyResponse::from));
+        Page<AgencyFavorite> agencyFavorites = agencyFavoriteRepository.findWithAgencyByUserId(userId, pageable);
+        return PageResponse.from(agencyFavorites.map(favorite -> AgencyResponse.from(favorite.getAgency(), true)));
     }
 
     @Transactional
-    public Boolean toggleFavorite(Integer userId, Integer agencyId) {
+    public void addFavorite(Integer userId, Integer agencyId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
         Agency agency = agencyRepository.findById(agencyId)
                 .orElseThrow(() -> new NoSuchElementException("Agency not found"));
 
-        boolean isFavorite = agencyFavoriteRepository.existsByUserIdAndAgencyId(userId, agencyId);
+        AgencyFavorite newFavorite = AgencyFavorite.create(user, agency);
+        agencyFavoriteRepository.save(newFavorite);
+    }
 
-        if (isFavorite) {
-            agencyFavoriteRepository.deleteByUserIdAndAgencyId(userId, agencyId);
-            return false;
-        } else {
-            AgencyFavorite newFavorite = AgencyFavorite.create(user, agency);
-            agencyFavoriteRepository.save(newFavorite);
-            return true;
-        }
+    @Transactional
+    public void removeFavorite(Integer userId, Integer agencyId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+        Agency agency = agencyRepository.findById(agencyId)
+                .orElseThrow(() -> new NoSuchElementException("Agency not found"));
+
+        agencyFavoriteRepository.deleteByUserIdAndAgencyId(userId, agencyId);
     }
 }
