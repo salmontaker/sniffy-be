@@ -28,13 +28,13 @@ public class AgencyController {
         return agencyService.getAgencies(request);
     }
 
-    @GetMapping("/favorite")
+    @GetMapping("/favorites")
     public PageResponse<AgencyResponse> getFavoriteAgencies(@AuthenticationPrincipal Integer userId,
                                                             @PageableDefault Pageable pageable) {
         return agencyService.getFavoriteAgencies(userId, pageable);
     }
 
-    @PostMapping("/favorite/{agencyId}")
+    @PostMapping("/favorites/{agencyId}")
     public Boolean postToggleFavorite(@AuthenticationPrincipal Integer userId,
                                       @PathVariable Integer agencyId) {
         return agencyService.toggleFavorite(userId, agencyId);

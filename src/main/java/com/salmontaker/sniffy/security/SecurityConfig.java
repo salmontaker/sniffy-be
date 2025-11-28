@@ -64,8 +64,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users")
                         .requestMatchers(HttpMethod.GET, "/api/users/{id:\\d+}")
                         .requestMatchers(HttpMethod.POST, "/api/auth/login")
-                        .requestMatchers(HttpMethod.GET, "/api/agencies", "/api/agencies/*")
-                        .requestMatchers(HttpMethod.GET, "/api/found-items", "/api/found-items/**")
+                        .requestMatchers(HttpMethod.GET, "/api/agencies", "/api/agencies/{id:\\d+}")
+                        .requestMatchers(HttpMethod.GET, "/api/found-items", "/api/found-items/{id:\\d+}", "/api/found-items/samples")
                         .requestMatchers(HttpMethod.GET, "/api/stats/**"))
                 .build();
     }
