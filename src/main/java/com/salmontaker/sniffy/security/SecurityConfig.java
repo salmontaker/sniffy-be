@@ -53,6 +53,15 @@ public class SecurityConfig {
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler))
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter((jwtToken -> {
+                            String sub = jwtToken.getSubject();
+                            Integer userId = Integer.valueOf(sub);
+
+                            return new UsernamePasswordAuthenticationToken(
+                                    userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+                        })))
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler));
     }
 
@@ -67,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/agencies", "/api/agencies/{id:\\d+}")
                         .requestMatchers(HttpMethod.GET, "/api/found-items", "/api/found-items/{id:\\d+}", "/api/found-items/samples")
                         .requestMatchers(HttpMethod.GET, "/api/stats/**"))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .build();
     }
 
@@ -83,15 +93,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/notices/**").authenticated()
                         .requestMatchers("/api/push-subscriptions/**").authenticated()
                         .anyRequest().denyAll())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter((jwtToken -> {
-                            String sub = jwtToken.getSubject();
-                            Integer userId = Integer.valueOf(sub);
-
-                            return new UsernamePasswordAuthenticationToken(
-                                    userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-                        })))
-                        .authenticationEntryPoint(customAuthenticationEntryPoint)
-                        .accessDeniedHandler(customAccessDeniedHandler))
                 .build();
     }
 }
