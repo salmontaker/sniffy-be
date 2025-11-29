@@ -81,7 +81,11 @@ public class FoundItemClient {
                         .queryParam("FD_SN", fdSn)
                         .build())
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<>() {
+                .bodyToMono(new ParameterizedTypeReference<OpenApiResponse<LostFoundDetailResponse>>() {
+                })
+                .onErrorResume(e -> {
+                    log.warn(e.getMessage());
+                    return Mono.empty();
                 });
     }
 }
