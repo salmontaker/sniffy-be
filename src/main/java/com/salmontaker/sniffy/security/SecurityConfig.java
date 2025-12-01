@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -92,6 +93,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/keywords/**").authenticated()
                         .requestMatchers("/api/notices/**").authenticated()
                         .requestMatchers("/api/push-subscriptions/**").authenticated()
+                        .requestMatchers("/api/admin/**").access((authentication, context) -> {
+                            String ip = context.getRequest().getRemoteAddr();
+                            boolean allowed = ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1") || ip.equals("::1");
+                            return new AuthorizationDecision(allowed);
+                        })
                         .anyRequest().denyAll())
                 .build();
     }

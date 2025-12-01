@@ -13,7 +13,10 @@ import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -26,58 +29,74 @@ public class FoundItemBatchService {
     private static final int CONCURRENCY = 3;
     private static final int RETRY_COUNT = 3;
 
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+
     @Transactional
-    public void syncExternalData(String startDate, String endDate) {
-        if (foundItemBatchRepository.hasTodayChangedItems()) {
-            log.info("Detected items created, updated, or deleted today.");
-            return;
+    public void syncExternalData() {
+        if (!isRunning.compareAndSet(false, true)) {
+            throw new RuntimeException("syncExternalData is already running.");
         }
-
-        log.info("Fetching TotalCounts...");
-
-        // 1. 임시 테이블 생성 (트랜잭션 시작)
-        foundItemBatchRepository.createTempTable();
 
         try {
-            // 2. 비동기 Flux 파이프라인 정의 (아직 실행 안 됨)
-            Flux<LostFoundResponse> itemFlux = fetchAllItems(startDate, endDate);
+            LocalDate end = LocalDate.now();
+            LocalDate start = end.minusMonths(6);
 
-            // 3. Flux를 청크(List<Item>) 단위의 '블로킹' Iterable로 변환
-            Iterable<List<LostFoundResponse>> itemChunks = itemFlux.buffer(NUM_OF_ROWS)
-                    .toIterable();
+            String startDate = start.format(DateTimeFormatter.BASIC_ISO_DATE);
+            String endDate = end.format(DateTimeFormatter.BASIC_ISO_DATE);
 
-            int totalInserted = 0;
-
-            // 4. 청크 단위로 반복하며 DB에 삽입
-            for (List<LostFoundResponse> chunk : itemChunks) {
-                if (chunk.isEmpty()) {
-                    continue;
-                }
-
-                foundItemBatchRepository.insertTempTable(chunk); // 청크 단위로 BATCH INSERT
-                totalInserted += chunk.size();
-                log.info("Inserted chunk of {}, total inserted: {}", chunk.size(), totalInserted);
+            if (foundItemBatchRepository.hasTodayChangedItems()) {
+                log.info("Detected items created, updated, or deleted today.");
+                return;
             }
 
-            log.info("Collected and inserted total {} items", totalInserted);
+            log.info("Fetching TotalCounts...");
 
-            // 5. 모든 삽입이 끝나면 Merge 수행
-            foundItemBatchRepository.mergeToMainTable();
+            // 1. 임시 테이블 생성 (트랜잭션 시작)
+            foundItemBatchRepository.createTempTable();
 
-            // 6. 주인을 찾았거나 6개월이 지난 항목 soft delete
-            foundItemBatchRepository.deleteFoundOrExpiredItem();
-        } catch (Exception e) {
-            // 7. 예외 발생시 롤백
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            log.error("Sync failed: {}", e.getMessage());
-            return;
+            try {
+                // 2. 비동기 Flux 파이프라인 정의 (아직 실행 안 됨)
+                Flux<LostFoundResponse> itemFlux = fetchAllItems(startDate, endDate);
+
+                // 3. Flux를 청크(List<Item>) 단위의 '블로킹' Iterable로 변환
+                Iterable<List<LostFoundResponse>> itemChunks = itemFlux.buffer(NUM_OF_ROWS)
+                        .toIterable();
+
+                int totalInserted = 0;
+
+                // 4. 청크 단위로 반복하며 DB에 삽입
+                for (List<LostFoundResponse> chunk : itemChunks) {
+                    if (chunk.isEmpty()) {
+                        continue;
+                    }
+
+                    foundItemBatchRepository.insertTempTable(chunk); // 청크 단위로 BATCH INSERT
+                    totalInserted += chunk.size();
+                    log.info("Inserted chunk of {}, total inserted: {}", chunk.size(), totalInserted);
+                }
+
+                log.info("Collected and inserted total {} items", totalInserted);
+
+                // 5. 모든 삽입이 끝나면 Merge 수행
+                foundItemBatchRepository.mergeToMainTable();
+
+                // 6. 주인을 찾았거나 6개월이 지난 항목 soft delete
+                foundItemBatchRepository.deleteFoundOrExpiredItem();
+            } catch (Exception e) {
+                // 7. 예외 발생시 롤백
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                log.error("Sync failed: {}", e.getMessage());
+                return;
+            } finally {
+                // 8. 성공/실패 여부와 관계없이 임시 테이블 삭제
+                foundItemBatchRepository.dropTempTable();
+            }
+
+            log.info("Sync Completed");
+            // (메서드 종료 시 트랜잭션 커밋)
         } finally {
-            // 8. 성공/실패 여부와 관계없이 임시 테이블 삭제
-            foundItemBatchRepository.dropTempTable();
+            isRunning.set(false);
         }
-
-        log.info("Sync Completed");
-        // (메서드 종료 시 트랜잭션 커밋)
     }
 
     private Flux<LostFoundResponse> fetchAllItems(String startDate, String endDate) {
