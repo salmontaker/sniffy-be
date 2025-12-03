@@ -4,10 +4,10 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.*;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -20,13 +20,33 @@ public class JwtConfig {
 
     @Bean
     public JwtEncoder jwtEncoder() {
-        SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-        return new NimbusJwtEncoder(new ImmutableSecret<>(keySpec));
+        return new NimbusJwtEncoder(new ImmutableSecret<>(getSecretKeySpec()));
     }
 
     @Bean
+    @Primary
     public JwtDecoder jwtDecoder() {
-        SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-        return NimbusJwtDecoder.withSecretKey(keySpec).build();
+        return createJwtDecoder("access");
+    }
+
+    @Bean
+    public JwtDecoder refreshTokenDecoder() {
+        return createJwtDecoder("refresh");
+    }
+
+    private SecretKeySpec getSecretKeySpec() {
+        return new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+    }
+
+    private JwtDecoder createJwtDecoder(String tokenType) {
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(getSecretKeySpec()).build();
+
+        OAuth2TokenValidator<Jwt> withTimestamp = new JwtTimestampValidator();
+        OAuth2TokenValidator<Jwt> withType = new JwtClaimValidator<>("type", tokenType::equals);
+        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(withTimestamp, withType);
+
+        jwtDecoder.setJwtValidator(validator);
+
+        return jwtDecoder;
     }
 }

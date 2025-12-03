@@ -36,7 +36,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfig() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173", "https://sniffy.64bit.kr"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -74,6 +74,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users")
                         .requestMatchers(HttpMethod.GET, "/api/users/{id:\\d+}")
                         .requestMatchers(HttpMethod.POST, "/api/auth/login")
+                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh")
                         .requestMatchers(HttpMethod.GET, "/api/agencies", "/api/agencies/{id:\\d+}")
                         .requestMatchers(HttpMethod.GET, "/api/found-items", "/api/found-items/{id:\\d+}", "/api/found-items/samples")
                         .requestMatchers(HttpMethod.GET, "/api/stats/**"))
@@ -96,6 +97,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").access((authentication, context) -> {
                             String ip = context.getRequest().getRemoteAddr();
                             boolean allowed = ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1") || ip.equals("::1");
+
                             return new AuthorizationDecision(allowed);
                         })
                         .anyRequest().denyAll())
