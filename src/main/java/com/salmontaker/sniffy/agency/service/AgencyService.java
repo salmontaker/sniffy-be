@@ -30,7 +30,7 @@ public class AgencyService {
 
     public AgencyResponse getAgency(Integer userId, Integer agencyId) {
         Agency agency = agencyRepository.findById(agencyId)
-                .orElseThrow(() -> new NoSuchElementException("Agency not found"));
+                .orElseThrow(() -> new NoSuchElementException("센터를 찾을 수 없습니다."));
 
         boolean isFavorite = false;
         if (userId != null) {
@@ -64,9 +64,9 @@ public class AgencyService {
     @Transactional
     public void addFavorite(Integer userId, Integer agencyId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
         Agency agency = agencyRepository.findById(agencyId)
-                .orElseThrow(() -> new NoSuchElementException("Agency not found"));
+                .orElseThrow(() -> new NoSuchElementException("센터를 찾을 수 없습니다."));
 
         AgencyFavorite newFavorite = AgencyFavorite.create(user, agency);
         agencyFavoriteRepository.save(newFavorite);
@@ -75,9 +75,9 @@ public class AgencyService {
     @Transactional
     public void removeFavorite(Integer userId, Integer agencyId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
         Agency agency = agencyRepository.findById(agencyId)
-                .orElseThrow(() -> new NoSuchElementException("Agency not found"));
+                .orElseThrow(() -> new NoSuchElementException("센터를 찾을 수 없습니다."));
 
         agencyFavoriteRepository.deleteByUserIdAndAgencyId(userId, agencyId);
     }

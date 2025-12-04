@@ -23,7 +23,7 @@ public class UserKeywordService {
 
     public List<UserKeywordResponse> getUserKeywords(Integer userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
         List<UserKeyword> keywords = userKeywordRepository.findAllByUserId(user.getId());
 
         return keywords.stream().map(UserKeywordResponse::from).toList();
@@ -32,11 +32,11 @@ public class UserKeywordService {
     @Transactional
     public UserKeywordResponse createUserKeyword(Integer userId, UserKeywordCreateRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
         Integer keywordCount = userKeywordRepository.countByUserId(user.getId());
 
         if (keywordCount >= 5) {
-            throw new IllegalStateException("User can have maximum 5 keywords");
+            throw new IllegalStateException("키워드는 최대 5개까지 등록 가능합니다.");
         }
 
         UserKeyword keyword = UserKeyword.create(user, request.getKeyword());
@@ -47,12 +47,12 @@ public class UserKeywordService {
     @Transactional
     public UserKeywordResponse updateUserKeyword(Integer userId, Integer id, UserKeywordUpdateRequest request) {
         UserKeyword keyword = userKeywordRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Keyword not found"));
+                .orElseThrow(() -> new NoSuchElementException("키워드를 찾을 수 없습니다."));
 
         Integer keywordOwnerId = keyword.getUser().getId();
 
         if (!userId.equals(keywordOwnerId)) {
-            throw new AccessDeniedException("User id does not match");
+            throw new AccessDeniedException("해당 사용자의 키워드가 아닙니다.");
         }
 
         keyword.update(request.getKeyword());
@@ -63,12 +63,12 @@ public class UserKeywordService {
     @Transactional
     public UserKeywordResponse deleteUserKeyword(Integer userId, Integer id) {
         UserKeyword keyword = userKeywordRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Keyword not found"));
+                .orElseThrow(() -> new NoSuchElementException("키워드를 찾을 수 없습니다."));
 
         Integer keywordOwnerId = keyword.getUser().getId();
 
         if (!userId.equals(keywordOwnerId)) {
-            throw new AccessDeniedException("User id does not match");
+            throw new AccessDeniedException("해당 사용자의 키워드가 아닙니다.");
         }
 
         userKeywordRepository.delete(keyword);

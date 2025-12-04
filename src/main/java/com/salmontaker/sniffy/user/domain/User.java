@@ -33,11 +33,6 @@ public class User extends BaseEntity {
     private List<AgencyFavorite> favorites = new ArrayList<>();
 
     private User(String username, String password, String nickname) {
-        // 아이디와 비밀번호는 null을 허용 (OAuth 계정 추가 예정)
-        if (nickname == null) {
-            throw new IllegalArgumentException("Nickname is null");
-        }
-
         this.username = username;
         this.password = password;
         this.nickname = nickname;

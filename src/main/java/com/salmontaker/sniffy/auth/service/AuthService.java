@@ -115,7 +115,7 @@ public class AuthService {
         try {
             return refreshTokenDecoder.decode(token);
         } catch (JwtException e) {
-            throw new BadCredentialsException("유효하지 않은 리프레시 토큰입니다.", e);
+            throw new BadCredentialsException("유효하지 않은 리프레시 토큰입니다.");
         }
     }
 }

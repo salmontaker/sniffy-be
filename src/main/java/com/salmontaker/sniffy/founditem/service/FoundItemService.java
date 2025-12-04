@@ -43,14 +43,14 @@ public class FoundItemService {
 
     public FoundItemDetailResponse getFoundItemDetail(Integer id) {
         FoundItem foundItem = foundItemRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Item not found"));
+                .orElseThrow(() -> new NoSuchElementException("습득물을 찾을 수 없습니다."));
 
         LostFoundDetailResponse response = foundItemClient.fetchItemDetail(foundItem.getAtcId(), foundItem.getFdSn())
                 .map(OpenApiResponse::getItem)
                 .block();
 
         if (response == null) {
-            throw new NoSuchElementException("Item not found");
+            throw new NoSuchElementException("습득물을 찾을 수 없습니다.");
         }
 
         response.setUniq(response.getUniq().replaceFirst("내용", "").strip());

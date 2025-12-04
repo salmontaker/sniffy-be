@@ -21,7 +21,7 @@ public class UserService {
 
     public UserResponse getUser(Integer id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
         return UserResponse.from(user);
     }
@@ -30,7 +30,7 @@ public class UserService {
     public UserResponse registerUser(UserCreateRequest request) {
         // 아이디 중복여부 확인
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalStateException("Username already exists");
+            throw new IllegalStateException("중복된 아이디가 있습니다.");
         }
 
         User user = User.create(request.getUsername(),
@@ -43,7 +43,7 @@ public class UserService {
     @Transactional
     public UserResponse changeUser(Integer id, UserUpdateRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
         // 비밀번호 업데이트 안하는 경우에 null 들어가면 Encoder에서 Exception 발생
         String password = StringUtils.hasText(request.getPassword()) ?
@@ -57,7 +57,7 @@ public class UserService {
     @Transactional
     public UserResponse withdrawUser(Integer id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
         user.softDelete();
 

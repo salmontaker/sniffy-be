@@ -25,7 +25,7 @@ public class PushSubscriptionService {
     @Transactional
     public PushSubscriptionResponse subscribe(Integer userId, PushSubscriptionRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
         String endpoint = request.getEndpoint();
         String p256dh = request.getKeys().getP256dh();
@@ -42,12 +42,12 @@ public class PushSubscriptionService {
         String endpoint = request.getEndpoint();
 
         PushSubscription subscription = subscriptionRepository.findByEndpoint(endpoint)
-                .orElseThrow(() -> new NoSuchElementException("Subscription not found"));
+                .orElseThrow(() -> new NoSuchElementException("구독정보를 찾을 수 없습니다."));
 
         Integer subscriptionOwnerId = subscription.getUser().getId();
 
         if (!userId.equals(subscriptionOwnerId)) {
-            throw new AccessDeniedException("User id does not match");
+            throw new AccessDeniedException("해당 사용자의 구독정보가 아닙니다.");
         }
 
         PushSubscriptionResponse response = PushSubscriptionResponse.from(subscription);
@@ -61,12 +61,12 @@ public class PushSubscriptionService {
         String endpoint = request.getEndpoint();
 
         PushSubscription subscription = subscriptionRepository.findByEndpoint(endpoint)
-                .orElseThrow(() -> new NoSuchElementException("Subscription not found"));
+                .orElseThrow(() -> new NoSuchElementException("구독정보를 찾을 수 없습니다."));
 
         Integer subscriptionOwnerId = subscription.getUser().getId();
 
         if (!userId.equals(subscriptionOwnerId)) {
-            throw new AccessDeniedException("User id does not match");
+            throw new AccessDeniedException("해당 사용자의 구독정보가 아닙니다.");
         }
 
         return PushSubscriptionVerifyResponse.from(subscription);
