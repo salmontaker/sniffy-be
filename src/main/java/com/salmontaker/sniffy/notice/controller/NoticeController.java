@@ -23,7 +23,7 @@ public class NoticeController {
     }
 
     @DeleteMapping("/{noticeId}")
-    public NoticeResponse deleteNotice(@AuthenticationPrincipal Integer userId, @PathVariable Integer noticeId) {
-        return noticeService.deleteNotice(userId, noticeId);
+    public void deleteNotice(@AuthenticationPrincipal Integer userId, @PathVariable Integer noticeId) {
+        noticeService.deleteNotice(userId, noticeId);
     }
 }

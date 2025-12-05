@@ -23,9 +23,9 @@ public class PushSubscriptionController {
     }
 
     @DeleteMapping
-    public PushSubscriptionResponse unsubscribe(@AuthenticationPrincipal Integer userId,
-                                                @RequestBody PushSubscriptionDeleteRequest request) {
-        return subscriptionService.unsubscribe(userId, request);
+    public void unsubscribe(@AuthenticationPrincipal Integer userId,
+                            @RequestBody PushSubscriptionDeleteRequest request) {
+        subscriptionService.unsubscribe(userId, request);
     }
 
     @PostMapping("/verify")

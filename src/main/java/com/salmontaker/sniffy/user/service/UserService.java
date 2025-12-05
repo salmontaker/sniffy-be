@@ -55,12 +55,10 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse withdrawUser(Integer id) {
+    public void withdrawUser(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
         user.softDelete();
-
-        return UserResponse.from(user);
     }
 }

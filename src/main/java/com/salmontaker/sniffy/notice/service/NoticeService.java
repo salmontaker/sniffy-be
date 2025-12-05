@@ -26,7 +26,7 @@ public class NoticeService {
     }
 
     @Transactional
-    public NoticeResponse deleteNotice(Integer userId, Integer noticeId) {
+    public void deleteNotice(Integer userId, Integer noticeId) {
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() -> new NoSuchElementException("알림을 찾을 수 없습니다."));
 
@@ -36,10 +36,6 @@ public class NoticeService {
             throw new AccessDeniedException("해당 유저의 알림이 아닙니다.");
         }
 
-        NoticeResponse response = NoticeResponse.from(notice);
-
         noticeRepository.delete(notice);
-
-        return response;
     }
 }

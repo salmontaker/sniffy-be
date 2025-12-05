@@ -38,7 +38,7 @@ public class PushSubscriptionService {
     }
 
     @Transactional
-    public PushSubscriptionResponse unsubscribe(Integer userId, PushSubscriptionDeleteRequest request) {
+    public void unsubscribe(Integer userId, PushSubscriptionDeleteRequest request) {
         String endpoint = request.getEndpoint();
 
         PushSubscription subscription = subscriptionRepository.findByEndpoint(endpoint)
@@ -50,11 +50,7 @@ public class PushSubscriptionService {
             throw new AccessDeniedException("해당 사용자의 구독정보가 아닙니다.");
         }
 
-        PushSubscriptionResponse response = PushSubscriptionResponse.from(subscription);
-
         subscriptionRepository.delete(subscription);
-
-        return response;
     }
 
     public PushSubscriptionVerifyResponse verifySubscription(Integer userId, PushSubscriptionVerifyRequest request) {

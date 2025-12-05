@@ -39,7 +39,7 @@ public class UserController {
     }
 
     @DeleteMapping
-    public UserResponse deleteUser(@AuthenticationPrincipal Integer userId) {
-        return userService.withdrawUser(userId);
+    public void deleteUser(@AuthenticationPrincipal Integer userId) {
+        userService.withdrawUser(userId);
     }
 }

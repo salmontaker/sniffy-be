@@ -36,8 +36,8 @@ public class UserKeywordController {
     }
 
     @DeleteMapping("/{id}")
-    public UserKeywordResponse deleteUserKeyword(@AuthenticationPrincipal Integer userId,
-                                                 @PathVariable Integer id) {
-        return userKeywordService.deleteUserKeyword(userId, id);
+    public void deleteUserKeyword(@AuthenticationPrincipal Integer userId,
+                                  @PathVariable Integer id) {
+        userKeywordService.deleteUserKeyword(userId, id);
     }
 }

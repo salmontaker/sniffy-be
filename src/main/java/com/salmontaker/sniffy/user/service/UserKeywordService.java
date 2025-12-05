@@ -61,7 +61,7 @@ public class UserKeywordService {
     }
 
     @Transactional
-    public UserKeywordResponse deleteUserKeyword(Integer userId, Integer id) {
+    public void deleteUserKeyword(Integer userId, Integer id) {
         UserKeyword keyword = userKeywordRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("키워드를 찾을 수 없습니다."));
 
@@ -72,7 +72,5 @@ public class UserKeywordService {
         }
 
         userKeywordRepository.delete(keyword);
-
-        return UserKeywordResponse.from(keyword);
     }
 }
