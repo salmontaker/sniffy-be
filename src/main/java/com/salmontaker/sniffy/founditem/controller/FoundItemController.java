@@ -7,6 +7,7 @@ import com.salmontaker.sniffy.founditem.dto.internal.response.FoundItemResponse;
 import com.salmontaker.sniffy.founditem.service.FoundItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ public class FoundItemController {
 
     @GetMapping
     public PageResponse<FoundItemResponse> getFoundItems(@ModelAttribute FoundItemRequest request,
-                                                         @PageableDefault Pageable pageable) {
+                                                         @PageableDefault(sort = "atcId", direction = Sort.Direction.DESC) Pageable pageable) {
         return foundItemService.getFoundItems(request, pageable);
     }
 
