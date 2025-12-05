@@ -4,6 +4,7 @@ import com.salmontaker.sniffy.auth.domain.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -11,4 +12,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Inte
     Optional<RefreshToken> findByUserIdAndToken(Integer tokenOwnerId, String refreshToken);
 
     void deleteByUserIdAndToken(Integer userId, String token);
+
+    void deleteByExpiresAtBefore(LocalDateTime expiresAtBefore);
 }

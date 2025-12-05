@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
 @Service
@@ -46,8 +47,9 @@ public class AuthService {
 
         String accessToken = generateAccessToken(user);
         String refreshToken = generateRefreshToken(user);
+        LocalDateTime expiresAt = LocalDateTime.now().plusSeconds(REFRESH_TOKEN_MAX_AGE);
 
-        refreshTokenRepository.save(RefreshToken.create(user, refreshToken));
+        refreshTokenRepository.save(RefreshToken.create(user, refreshToken, expiresAt));
 
         return AuthResult.builder()
                 .accessToken(accessToken)
@@ -80,8 +82,9 @@ public class AuthService {
 
         String accessToken = generateAccessToken(user);
         String newRefreshToken = generateRefreshToken(user);
+        LocalDateTime expiresAt = LocalDateTime.now().plusSeconds(REFRESH_TOKEN_MAX_AGE);
 
-        storedToken.update(user, newRefreshToken);
+        storedToken.update(user, newRefreshToken, expiresAt);
 
         return AuthResult.builder()
                 .accessToken(accessToken)
