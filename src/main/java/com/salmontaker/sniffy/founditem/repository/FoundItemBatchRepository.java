@@ -3,12 +3,12 @@ package com.salmontaker.sniffy.founditem.repository;
 import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
@@ -16,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FoundItemBatchRepository {
     private final JdbcTemplate jdbc;
+    private final NamedParameterJdbcTemplate namedJdbc;
 
     public boolean hasTodayChangedItems() {
         String sql = """
@@ -45,29 +46,11 @@ public class FoundItemBatchRepository {
                 INSERT INTO temp_found_item 
                     (atc_id, clr_nm, dep_place, fd_file_path_img, fd_prdt_nm, fd_sbjt, fd_sn, fd_ymd, prdt_cl_nm)
                 VALUES
-                    (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (:atcId, :clrNm, :depPlace, :fdFilePathImg, :fdPrdtNm, :fdSbjt, :fdSn, :fdYmd, :prdtClNm)
                 """;
 
-        jdbc.batchUpdate(sql, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                LostFoundResponse item = items.get(i);
-                ps.setString(1, item.getAtcId());
-                ps.setString(2, item.getClrNm());
-                ps.setString(3, item.getDepPlace());
-                ps.setString(4, item.getFdFilePathImg());
-                ps.setString(5, item.getFdPrdtNm());
-                ps.setString(6, item.getFdSbjt());
-                ps.setInt(7, item.getFdSn());
-                ps.setString(8, item.getFdYmd());
-                ps.setString(9, item.getPrdtClNm());
-            }
-
-            @Override
-            public int getBatchSize() {
-                return items.size();
-            }
-        });
+        SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(items);
+        namedJdbc.batchUpdate(sql, batch);
     }
 
     public void mergeToMainTable() {
