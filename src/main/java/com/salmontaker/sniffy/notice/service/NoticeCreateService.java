@@ -68,7 +68,7 @@ public class NoticeCreateService {
     }
 
     private Notice createNotification(User user, String keyword, List<FoundItem> matched) {
-        String title = String.format("[키워드 알림] \"%s\"에 해당하는 물품 수: %d", keyword, matched.size());
+        String title = String.format("\"%s\"에 해당하는 물품이 %d개 등록되었어요!", keyword, matched.size());
         String content = matched.stream()
                 .limit(5)
                 .map(this::summaryItem)
