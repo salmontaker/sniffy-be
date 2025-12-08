@@ -28,7 +28,7 @@ public class Agency extends BaseEntity {
     private String address;
 
     @Column(length = 50)
-    private String telNo;
+    private String tel;
 
     @Column(precision = 10, scale = 8)
     private BigDecimal latitude;

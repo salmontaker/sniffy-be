@@ -12,7 +12,7 @@ public class AgencyResponse {
     private Integer id;
     private String name;
     private String address;
-    private String telNo;
+    private String tel;
     private BigDecimal latitude;
     private BigDecimal longitude;
     private Boolean isFavorite;
@@ -22,7 +22,7 @@ public class AgencyResponse {
                 .id(agency.getId())
                 .name(agency.getName())
                 .address(agency.getAddress())
-                .telNo(agency.getTelNo())
+                .tel(agency.getTel())
                 .latitude(agency.getLatitude())
                 .longitude(agency.getLongitude())
                 .isFavorite(isFavorite)
