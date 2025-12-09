@@ -1,5 +1,6 @@
 package com.salmontaker.sniffy.user.service;
 
+import com.salmontaker.sniffy.push.repository.PushSubscriptionRepository;
 import com.salmontaker.sniffy.user.domain.User;
 import com.salmontaker.sniffy.user.dto.request.UserCreateRequest;
 import com.salmontaker.sniffy.user.dto.request.UserUpdateRequest;
@@ -17,6 +18,7 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final PushSubscriptionRepository pushSubscriptionRepository;
     private final PasswordEncoder passwordEncoder;
 
     public UserResponse getUser(Integer id) {
@@ -58,6 +60,8 @@ public class UserService {
     public void withdrawUser(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+
+        pushSubscriptionRepository.deleteByUserId(user.getId());
 
         user.softDelete();
     }
