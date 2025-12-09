@@ -3,9 +3,7 @@ package com.salmontaker.sniffy.push.service;
 import com.salmontaker.sniffy.push.domain.PushSubscription;
 import com.salmontaker.sniffy.push.dto.request.PushSubscriptionDeleteRequest;
 import com.salmontaker.sniffy.push.dto.request.PushSubscriptionRequest;
-import com.salmontaker.sniffy.push.dto.request.PushSubscriptionVerifyRequest;
 import com.salmontaker.sniffy.push.dto.response.PushSubscriptionResponse;
-import com.salmontaker.sniffy.push.dto.response.PushSubscriptionVerifyResponse;
 import com.salmontaker.sniffy.push.repository.PushSubscriptionRepository;
 import com.salmontaker.sniffy.user.domain.User;
 import com.salmontaker.sniffy.user.repository.UserRepository;
@@ -51,20 +49,5 @@ public class PushSubscriptionService {
         }
 
         subscriptionRepository.delete(subscription);
-    }
-
-    public PushSubscriptionVerifyResponse verifySubscription(Integer userId, PushSubscriptionVerifyRequest request) {
-        String endpoint = request.getEndpoint();
-
-        PushSubscription subscription = subscriptionRepository.findByEndpoint(endpoint)
-                .orElseThrow(() -> new NoSuchElementException("구독정보를 찾을 수 없습니다."));
-
-        Integer subscriptionOwnerId = subscription.getUser().getId();
-
-        if (!userId.equals(subscriptionOwnerId)) {
-            throw new AccessDeniedException("해당 사용자의 구독정보가 아닙니다.");
-        }
-
-        return PushSubscriptionVerifyResponse.from(subscription);
     }
 }

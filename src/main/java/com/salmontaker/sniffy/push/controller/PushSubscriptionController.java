@@ -2,9 +2,7 @@ package com.salmontaker.sniffy.push.controller;
 
 import com.salmontaker.sniffy.push.dto.request.PushSubscriptionDeleteRequest;
 import com.salmontaker.sniffy.push.dto.request.PushSubscriptionRequest;
-import com.salmontaker.sniffy.push.dto.request.PushSubscriptionVerifyRequest;
 import com.salmontaker.sniffy.push.dto.response.PushSubscriptionResponse;
-import com.salmontaker.sniffy.push.dto.response.PushSubscriptionVerifyResponse;
 import com.salmontaker.sniffy.push.service.PushSubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,11 +24,5 @@ public class PushSubscriptionController {
     public void unsubscribe(@AuthenticationPrincipal Integer userId,
                             @RequestBody PushSubscriptionDeleteRequest request) {
         subscriptionService.unsubscribe(userId, request);
-    }
-
-    @PostMapping("/verify")
-    public PushSubscriptionVerifyResponse verifySubscription(@AuthenticationPrincipal Integer userId,
-                                                             @RequestBody PushSubscriptionVerifyRequest request) {
-        return subscriptionService.verifySubscription(userId, request);
     }
 }
