@@ -2,7 +2,6 @@ package com.salmontaker.sniffy.push.controller;
 
 import com.salmontaker.sniffy.push.dto.request.PushSubscriptionDeleteRequest;
 import com.salmontaker.sniffy.push.dto.request.PushSubscriptionRequest;
-import com.salmontaker.sniffy.push.dto.response.PushSubscriptionResponse;
 import com.salmontaker.sniffy.push.service.PushSubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,10 +13,16 @@ import org.springframework.web.bind.annotation.*;
 public class PushSubscriptionController {
     private final PushSubscriptionService subscriptionService;
 
+    @GetMapping
+    public boolean subExists(@AuthenticationPrincipal Integer userId,
+                             @RequestParam String endpoint) {
+        return subscriptionService.subExists(userId, endpoint);
+    }
+
     @PostMapping
-    public PushSubscriptionResponse subscribe(@AuthenticationPrincipal Integer userId,
-                                              @RequestBody PushSubscriptionRequest request) {
-        return subscriptionService.subscribe(userId, request);
+    public void subscribe(@AuthenticationPrincipal Integer userId,
+                          @RequestBody PushSubscriptionRequest request) {
+        subscriptionService.subscribe(userId, request);
     }
 
     @DeleteMapping

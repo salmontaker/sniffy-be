@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface PushSubscriptionRepository extends JpaRepository<PushSubscription, Integer> {
     Optional<PushSubscription> findByEndpoint(String endpoint);
 
+    boolean existsByUserIdAndEndpoint(Integer userId, String endpoint);
+
     List<PushSubscription> findAllByUserIdIn(Collection<Integer> userIds);
 
     void deleteByUserId(Integer userId);

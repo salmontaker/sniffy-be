@@ -1,18 +1,16 @@
 package com.salmontaker.sniffy.push.domain;
 
-import com.salmontaker.sniffy.common.BaseEntity;
 import com.salmontaker.sniffy.user.domain.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(name = "unique_endpoint", columnNames = {"endpoint"})})
-@SQLRestriction("deleted_at IS NULL")
 @Getter
-@NoArgsConstructor
-public class PushSubscription extends BaseEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class PushSubscription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -39,5 +37,12 @@ public class PushSubscription extends BaseEntity {
 
     public static PushSubscription create(User user, String endpoint, String p256dh, String auth) {
         return new PushSubscription(user, endpoint, p256dh, auth);
+    }
+
+    public void update(User user, String endpoint, String p256dh, String auth) {
+        if (user != null) this.user = user;
+        if (endpoint != null) this.endpoint = endpoint;
+        if (p256dh != null) this.p256dh = p256dh;
+        if (auth != null) this.auth = auth;
     }
 }
