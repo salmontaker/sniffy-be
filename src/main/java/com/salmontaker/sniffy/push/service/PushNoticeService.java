@@ -28,12 +28,9 @@ public class PushNoticeService {
     private final PushService pushService;
 
     public void pushNotice() {
-        log.info("Push notice started");
-
         List<Notice> notices = noticeRepository.findAllBySentAtIsNull();
 
         if (notices.isEmpty()) {
-            log.info("There is no notice to be pushed");
             return;
         }
 
@@ -75,8 +72,6 @@ public class PushNoticeService {
 
         noticeRepository.saveAll(notices);
         pushSubscriptionRepository.deleteAllInBatch(invalidSubscriptions);
-
-        log.info("Push job done");
     }
 
     private boolean isSuccess(int statusCode) {

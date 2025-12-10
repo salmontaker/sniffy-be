@@ -45,7 +45,6 @@ public class FoundItemBatchService {
             String endDate = end.format(DateTimeFormatter.BASIC_ISO_DATE);
 
             if (foundItemBatchRepository.hasTodayChangedItems()) {
-                log.info("Detected items created, updated, or deleted today.");
                 return;
             }
 
@@ -74,8 +73,6 @@ public class FoundItemBatchService {
                     totalInserted += chunk.size();
                     log.info("Inserted chunk of {}, total inserted: {}", chunk.size(), totalInserted);
                 }
-
-                log.info("Collected and inserted total {} items", totalInserted);
 
                 // 5. 모든 삽입이 끝나면 Merge 수행
                 foundItemBatchRepository.mergeToMainTable();
