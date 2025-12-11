@@ -10,9 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface PushSubscriptionRepository extends JpaRepository<PushSubscription, Integer> {
-    Optional<PushSubscription> findByEndpoint(String endpoint);
-
     boolean existsByUserIdAndEndpoint(Integer userId, String endpoint);
+
+    Optional<PushSubscription> findByEndpoint(String endpoint);
 
     List<PushSubscription> findAllByUserIdIn(Collection<Integer> userIds);
 

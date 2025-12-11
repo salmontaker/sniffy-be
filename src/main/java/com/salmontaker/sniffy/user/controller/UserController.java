@@ -1,8 +1,10 @@
 package com.salmontaker.sniffy.user.controller;
 
 import com.salmontaker.sniffy.user.dto.request.UserCreateRequest;
+import com.salmontaker.sniffy.user.dto.request.UserPreferenceUpdateRequest;
 import com.salmontaker.sniffy.user.dto.request.UserUpdateRequest;
 import com.salmontaker.sniffy.user.dto.response.UserResponse;
+import com.salmontaker.sniffy.user.dto.response.UserWithPreferenceResponse;
 import com.salmontaker.sniffy.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +24,6 @@ public class UserController {
         return userService.getUser(id);
     }
 
-    @GetMapping("/me")
-    public UserResponse getCurrentUser(@AuthenticationPrincipal Integer id) {
-        return userService.getUser(id);
-    }
-
     @PostMapping
     public UserResponse createUser(@Valid @RequestBody UserCreateRequest request) {
         return userService.registerUser(request);
@@ -41,5 +38,16 @@ public class UserController {
     @DeleteMapping
     public void deleteUser(@AuthenticationPrincipal Integer userId) {
         userService.withdrawUser(userId);
+    }
+
+    @GetMapping("/me")
+    public UserWithPreferenceResponse getCurrentUser(@AuthenticationPrincipal Integer id) {
+        return userService.getCurrentUser(id);
+    }
+    
+    @PutMapping("/me/preference")
+    public UserWithPreferenceResponse updatePreference(@AuthenticationPrincipal Integer id,
+                                                       @RequestBody UserPreferenceUpdateRequest request) {
+        return userService.updatePreference(id, request);
     }
 }

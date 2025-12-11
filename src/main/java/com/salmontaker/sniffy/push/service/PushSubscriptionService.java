@@ -7,12 +7,10 @@ import com.salmontaker.sniffy.push.repository.PushSubscriptionRepository;
 import com.salmontaker.sniffy.user.domain.User;
 import com.salmontaker.sniffy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +18,7 @@ public class PushSubscriptionService {
     private final UserRepository userRepository;
     private final PushSubscriptionRepository pushSubRepository;
 
-    public Boolean subExists(Integer userId, String endpoint) {
+    public Boolean checkSubscription(Integer userId, String endpoint) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
@@ -36,16 +34,10 @@ public class PushSubscriptionService {
         String p256dh = request.getKeys().getP256dh();
         String auth = request.getKeys().getAuth();
 
-        Optional<PushSubscription> subscription = pushSubRepository.findByEndpoint(endpoint);
-        if (subscription.isPresent()) {
-            // 다른 사용자여도 같은 브라우저에서 구독하는 경우가 있으므로, 사용자 정보도 교체
-            PushSubscription existSub = subscription.get();
-            existSub.update(user, endpoint, p256dh, auth);
-        } else {
-            // 구독이 없을 경우 새로운 구독 생성
-            PushSubscription newSub = PushSubscription.create(user, endpoint, p256dh, auth);
-            pushSubRepository.save(newSub);
-        }
+        // 브라우저 프로필당 endpoint는 하나이므로, 겹치는 엔드포인트는 구독시 사용자 교체
+        pushSubRepository.findByEndpoint(endpoint)
+                .ifPresentOrElse(sub -> sub.update(user, endpoint, p256dh, auth),
+                        () -> pushSubRepository.save(PushSubscription.create(user, endpoint, p256dh, auth)));
     }
 
     @Transactional
@@ -58,12 +50,7 @@ public class PushSubscriptionService {
         PushSubscription subscription = pushSubRepository.findByEndpoint(endpoint)
                 .orElseThrow(() -> new NoSuchElementException("구독정보를 찾을 수 없습니다."));
 
-        Integer subscriptionOwnerId = subscription.getUser().getId();
-
-        if (!user.getId().equals(subscriptionOwnerId)) {
-            throw new AccessDeniedException("해당 사용자의 구독정보가 아닙니다.");
-        }
-
+        // 구독 정보 제거
         pushSubRepository.delete(subscription);
     }
 }

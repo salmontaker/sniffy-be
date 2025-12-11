@@ -14,9 +14,9 @@ public class PushSubscriptionController {
     private final PushSubscriptionService subscriptionService;
 
     @GetMapping
-    public boolean subExists(@AuthenticationPrincipal Integer userId,
-                             @RequestParam String endpoint) {
-        return subscriptionService.subExists(userId, endpoint);
+    public boolean checkSubscription(@AuthenticationPrincipal Integer userId,
+                                     @RequestParam String endpoint) {
+        return subscriptionService.checkSubscription(userId, endpoint);
     }
 
     @PostMapping

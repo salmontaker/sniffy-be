@@ -2,9 +2,13 @@ package com.salmontaker.sniffy.user.service;
 
 import com.salmontaker.sniffy.push.repository.PushSubscriptionRepository;
 import com.salmontaker.sniffy.user.domain.User;
+import com.salmontaker.sniffy.user.domain.UserPreference;
 import com.salmontaker.sniffy.user.dto.request.UserCreateRequest;
+import com.salmontaker.sniffy.user.dto.request.UserPreferenceUpdateRequest;
 import com.salmontaker.sniffy.user.dto.request.UserUpdateRequest;
 import com.salmontaker.sniffy.user.dto.response.UserResponse;
+import com.salmontaker.sniffy.user.dto.response.UserWithPreferenceResponse;
+import com.salmontaker.sniffy.user.repository.UserPreferenceRepository;
 import com.salmontaker.sniffy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +22,9 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final UserPreferenceRepository userPrefRepository;
     private final PushSubscriptionRepository pushSubscriptionRepository;
+
     private final PasswordEncoder passwordEncoder;
 
     public UserResponse getUser(Integer id) {
@@ -35,11 +41,18 @@ public class UserService {
             throw new IllegalStateException("중복된 아이디가 있습니다.");
         }
 
-        User user = User.create(request.getUsername(),
-                passwordEncoder.encode(request.getPassword()),
-                request.getNickname());
+        User user = userRepository.save(
+                User.create(
+                        request.getUsername(),
+                        passwordEncoder.encode(request.getPassword()),
+                        request.getNickname()
+                )
+        );
 
-        return UserResponse.from(userRepository.save(user));
+        UserPreference userPreference = UserPreference.create(user, false, false);
+        userPrefRepository.save(userPreference);
+
+        return UserResponse.from(user);
     }
 
     @Transactional
@@ -64,5 +77,27 @@ public class UserService {
         pushSubscriptionRepository.deleteByUserId(user.getId());
 
         user.softDelete();
+    }
+
+    public UserWithPreferenceResponse getCurrentUser(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+
+        UserPreference userPref = userPrefRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new NoSuchElementException("사용자 설정을 찾을 수 없습니다."));
+
+        return UserWithPreferenceResponse.from(user, userPref);
+    }
+
+    public UserWithPreferenceResponse updatePreference(Integer id, UserPreferenceUpdateRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+
+        UserPreference userPref = userPrefRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new NoSuchElementException("사용자 설정을 찾을 수 없습니다."));
+
+        userPref.update(request.getIsPushEnabled(), request.getIsFavoriteFirst());
+
+        return UserWithPreferenceResponse.from(user, userPref);
     }
 }
