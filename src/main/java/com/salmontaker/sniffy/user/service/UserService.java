@@ -89,6 +89,7 @@ public class UserService {
         return UserWithPreferenceResponse.from(user, userPref);
     }
 
+    @Transactional
     public UserWithPreferenceResponse updatePreference(Integer id, UserPreferenceUpdateRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
