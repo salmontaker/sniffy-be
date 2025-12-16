@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
@@ -29,8 +30,15 @@ public class User extends BaseEntity {
     @Column(length = 50)
     private String nickname;
 
+    @OneToOne(mappedBy = "user")
+    private UserPreference userPreference;
+
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "user")
     private List<AgencyFavorite> favorites = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<UserKeyword> keywords = new ArrayList<>();
 
     private User(String username, String password, String nickname) {
         this.username = username;
