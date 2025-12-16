@@ -54,27 +54,42 @@ public class SecurityConfig {
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
-                        .accessDeniedHandler(customAccessDeniedHandler))
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter((jwtToken -> {
-                            String sub = jwtToken.getSubject();
-                            Integer userId = Integer.valueOf(sub);
-
-                            return new UsernamePasswordAuthenticationToken(
-                                    userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-                        })))
-                        .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler));
+
+    }
+
+    private HttpSecurity applyOAuth2ResourceServer(HttpSecurity http) throws Exception {
+        return http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter((jwtToken -> {
+                    String sub = jwtToken.getSubject();
+                    Integer userId = Integer.valueOf(sub);
+
+                    return new UsernamePasswordAuthenticationToken(
+                            userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+                })))
+                .authenticationEntryPoint(customAuthenticationEntryPoint)
+                .accessDeniedHandler(customAccessDeniedHandler));
     }
 
     @Bean
     @Order(1)
+    public SecurityFilterChain authChain(HttpSecurity http) throws Exception {
+        applyCommonSettings(http);
+
+        return http.securityMatchers(matchers -> matchers
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login")
+                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh"))
+                .build();
+    }
+
+    @Bean
+    @Order(2)
     public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
         applyCommonSettings(http);
+        applyOAuth2ResourceServer(http);
+
         return http.securityMatchers(matchers -> matchers
                         .requestMatchers(HttpMethod.POST, "/api/users")
                         .requestMatchers(HttpMethod.GET, "/api/users/{id:\\d+}")
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login")
-                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh")
                         .requestMatchers(HttpMethod.GET, "/api/agencies", "/api/agencies/{id:\\d+}")
                         .requestMatchers(HttpMethod.GET, "/api/found-items", "/api/found-items/{id:\\d+}", "/api/found-items/samples")
                         .requestMatchers(HttpMethod.GET, "/api/stats/**"))
@@ -83,9 +98,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Order(2)
+    @Order(3)
     public SecurityFilterChain protectedChain(HttpSecurity http) throws Exception {
         applyCommonSettings(http);
+        applyOAuth2ResourceServer(http);
+
         return http.securityMatcher("/api/**")
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/**").authenticated()
