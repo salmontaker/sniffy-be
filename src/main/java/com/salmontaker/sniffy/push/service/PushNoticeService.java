@@ -8,15 +8,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Encoding;
 import nl.martijndwars.webpush.Notification;
-import nl.martijndwars.webpush.PushService;
-import org.apache.http.HttpResponse;
+import nl.martijndwars.webpush.PushAsyncService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -25,10 +27,12 @@ import java.util.stream.Collectors;
 public class PushNoticeService {
     private final NoticeRepository noticeRepository;
     private final PushSubscriptionRepository pushSubscriptionRepository;
-    private final PushService pushService;
+    private final PushAsyncService pushService;
 
+    @Transactional
     public void pushNotice() {
-        List<Notice> notices = noticeRepository.findAllBySentAtIsNull();
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+        List<Notice> notices = noticeRepository.findAllByCreatedAtAfterAndSentAtIsNull(startOfToday);
 
         if (notices.isEmpty()) {
             return;
@@ -43,7 +47,8 @@ public class PushNoticeService {
                 .stream()
                 .collect(Collectors.groupingBy(ps -> ps.getUser().getId()));
 
-        List<PushSubscription> invalidSubscriptions = new ArrayList<>();
+        List<PushSubscription> invalidSubscriptions = Collections.synchronizedList(new ArrayList<>());
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (Notice notice : notices) {
             Integer userId = notice.getUser().getId();
@@ -56,22 +61,38 @@ public class PushNoticeService {
             for (PushSubscription subscription : subscriptions) {
                 try {
                     Notification notification = createNotification(notice, subscription);
-                    HttpResponse response = pushService.send(notification, Encoding.AES128GCM);
-                    int statusCode = response.getStatusLine().getStatusCode();
+                    CompletableFuture<Void> future = pushService.send(notification, Encoding.AES128GCM)
+                            .thenAccept(response -> {
+                                int statusCode = response.getStatusCode();
+                                if (isSuccess(statusCode)) {
+                                    synchronized (notice) {
+                                        if (notice.getSentAt() == null) {
+                                            notice.sentAt(LocalDateTime.now());
+                                        }
+                                    }
+                                } else if (isInvalidSubscription(statusCode)) {
+                                    invalidSubscriptions.add(subscription);
+                                }
+                            })
+                            .exceptionally(e -> {
+                                log.error(e.getMessage());
+                                return null;
+                            });
 
-                    if (isSuccess(statusCode)) {
-                        notice.sentAt(LocalDateTime.now());
-                    } else if (isInvalidSubscription(statusCode)) {
-                        invalidSubscriptions.add(subscription);
-                    }
+                    futures.add(future);
                 } catch (Exception e) {
                     log.error(e.getMessage());
                 }
             }
         }
 
-        noticeRepository.saveAll(notices);
-        pushSubscriptionRepository.deleteAllInBatch(invalidSubscriptions);
+        if (!futures.isEmpty()) {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        }
+
+        if (!invalidSubscriptions.isEmpty()) {
+            pushSubscriptionRepository.deleteAllInBatch(invalidSubscriptions);
+        }
     }
 
     private boolean isSuccess(int statusCode) {

@@ -1,6 +1,6 @@
 package com.salmontaker.sniffy.push.config;
 
-import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.PushAsyncService;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,10 +20,10 @@ public class PushConfig {
     private String subject;
 
     @Bean
-    public PushService pushService() throws Exception {
+    public PushAsyncService pushService() throws Exception {
         Security.addProvider(new BouncyCastleProvider());
 
-        PushService pushService = new PushService();
+        PushAsyncService pushService = new PushAsyncService();
 
         pushService.setPublicKey(publicKey);
         pushService.setPrivateKey(privateKey);
