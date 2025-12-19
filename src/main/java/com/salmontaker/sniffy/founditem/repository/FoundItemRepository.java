@@ -20,17 +20,17 @@ public interface FoundItemRepository extends JpaRepository<FoundItem, Integer>, 
     @EntityGraph(attributePaths = "agency")
     Page<FoundItem> findAll(Specification<FoundItem> specification, Pageable pageable);
 
-    @EntityGraph(attributePaths = "agency")
     @Query("""
             SELECT f FROM FoundItem f
+            JOIN FETCH f.agency
             WHERE f.createdAt >= :startOfToday
             ORDER BY f.atcId DESC
             """)
     List<FoundItem> findToday(@Param("startOfToday") LocalDateTime startOfToday);
-
-    @EntityGraph(attributePaths = "agency")
+    
     @Query("""
             SELECT f FROM FoundItem f
+            JOIN FETCH f.agency
             WHERE f.createdAt >= :startOfToday
             AND f.fdFilePathImg NOT LIKE '%no_img.gif'
             ORDER BY f.atcId DESC
