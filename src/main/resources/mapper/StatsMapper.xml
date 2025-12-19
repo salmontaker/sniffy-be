@@ -11,10 +11,15 @@
                        COALESCE(MAX(deleted_at), '0000-00-00')
                ) AS lastUpdated
         FROM found_item
+        WHERE created_at >= #{month}
+           OR updated_at >= #{month}
+           OR deleted_at >= #{month}
     </select>
 
     <select id="top5Agencies">
-        SELECT a.id, a.name, COUNT(*) AS todayTotal
+        SELECT a.id,
+               a.name,
+               COUNT(*) AS todayTotal
         FROM agency a
              LEFT JOIN found_item fi ON a.id = fi.agency_id
         WHERE fi.created_at >= CURDATE()
@@ -24,7 +29,8 @@
     </select>
 
     <select id="top5Categories">
-        SELECT prdt_cl_nm AS category, COUNT(*) AS todayTotal
+        SELECT prdt_cl_nm AS category,
+               COUNT(*) AS todayTotal
         FROM found_item
         WHERE created_at >= CURDATE()
         GROUP BY prdt_cl_nm

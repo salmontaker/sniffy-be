@@ -14,7 +14,10 @@ import java.time.LocalDate;
 @Table(indexes = {
         @Index(name = "index_clr_nm", columnList = "clrNm"),
         @Index(name = "index_fd_ymd", columnList = "fdYmd"),
-        @Index(name = "index_prdt_cl_nm", columnList = "prdtClNm")},
+        @Index(name = "index_prdt_cl_nm", columnList = "prdtClNm"),
+        @Index(name = "index_created_at", columnList = "createdAt"),
+        @Index(name = "index_updated_at", columnList = "updatedAt"),
+        @Index(name = "index_deleted_at", columnList = "deletedAt")},
         uniqueConstraints = {@UniqueConstraint(name = "unique_atc_id_fd_sn", columnNames = {"atcId", "fdSn"})}
 )
 @SQLRestriction("deleted_at IS NULL")
