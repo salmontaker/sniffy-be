@@ -28,7 +28,7 @@ public class NoticeCreateService {
 
     @Transactional
     public void createKeywordNotification() {
-        List<User> targetUsers = userRepository.findAllWithKeywordsAndPreference();
+        List<User> targetUsers = userRepository.findAllWithKeywordAndPushEnabled();
         List<FoundItem> todayItems = findTodayItems();
         List<Notice> notices = new ArrayList<>();
 

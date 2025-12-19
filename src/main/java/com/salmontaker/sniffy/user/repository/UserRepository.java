@@ -14,8 +14,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findByUsername(String username);
 
-    @Query("SELECT DISTINCT u FROM User u " +
-            "LEFT JOIN FETCH u.userPreference " +
-            "JOIN FETCH u.keywords")
-    List<User> findAllWithKeywordsAndPreference();
+    @Query("""
+            SELECT DISTINCT u FROM User u
+            JOIN FETCH u.userPreference p
+            JOIN FETCH u.keywords
+            WHERE p.isPushEnabled = true
+            """)
+    List<User> findAllWithKeywordAndPushEnabled();
 }
