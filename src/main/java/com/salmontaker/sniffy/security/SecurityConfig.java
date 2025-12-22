@@ -5,12 +5,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,7 +16,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -49,45 +46,22 @@ public class SecurityConfig {
     private HttpSecurity applyCommonSettings(HttpSecurity http) throws Exception {
         return http.cors(cors -> cors.configurationSource(corsConfig()))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .formLogin(formLogin -> formLogin.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler));
-
-    }
-
-    private HttpSecurity applyOAuth2ResourceServer(HttpSecurity http) throws Exception {
-        return http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter((jwtToken -> {
-                    String sub = jwtToken.getSubject();
-                    Integer userId = Integer.valueOf(sub);
-
-                    return new UsernamePasswordAuthenticationToken(
-                            userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-                })))
-                .authenticationEntryPoint(customAuthenticationEntryPoint)
-                .accessDeniedHandler(customAccessDeniedHandler));
     }
 
     @Bean
     @Order(1)
-    public SecurityFilterChain authChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
         applyCommonSettings(http);
 
         return http.securityMatchers(matchers -> matchers
                         .requestMatchers(HttpMethod.POST, "/api/auth/login")
-                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh"))
-                .build();
-    }
-
-    @Bean
-    @Order(2)
-    public SecurityFilterChain publicChain(HttpSecurity http) throws Exception {
-        applyCommonSettings(http);
-        applyOAuth2ResourceServer(http);
-
-        return http.securityMatchers(matchers -> matchers
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout")
                         .requestMatchers(HttpMethod.POST, "/api/users")
                         .requestMatchers(HttpMethod.GET, "/api/users/{id:\\d+}")
                         .requestMatchers(HttpMethod.GET, "/api/agencies", "/api/agencies/{id:\\d+}")
@@ -98,15 +72,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Order(3)
+    @Order(2)
     public SecurityFilterChain protectedChain(HttpSecurity http) throws Exception {
         applyCommonSettings(http);
-        applyOAuth2ResourceServer(http);
 
         return http.securityMatcher("/api/**")
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/**").authenticated()
-                        .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers("/api/agencies/**").authenticated()
                         .requestMatchers("/api/keywords/**").authenticated()
                         .requestMatchers("/api/notices/**").authenticated()

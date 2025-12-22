@@ -1,16 +1,26 @@
 package com.salmontaker.sniffy.auth.controller;
 
 import com.salmontaker.sniffy.auth.dto.request.LoginRequest;
-import com.salmontaker.sniffy.auth.dto.response.AuthResponse;
-import com.salmontaker.sniffy.auth.dto.response.AuthResult;
 import com.salmontaker.sniffy.auth.service.AuthService;
+import com.salmontaker.sniffy.user.dto.response.UserResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/auth")
@@ -19,70 +29,38 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest request,
-                              HttpServletResponse response) {
-        AuthResult result = authService.login(request);
+    public void login(@Valid @RequestBody LoginRequest request,
+                      HttpServletRequest httpRequest) {
+        UserResponse user = authService.login(request);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user.getId(), null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
-        ResponseCookie refreshCookie = createRefreshCookie(result.getRefreshToken(), AuthService.REFRESH_TOKEN_MAX_AGE);
-        ResponseCookie flagCookie = createFlagCookie(AuthService.REFRESH_TOKEN_MAX_AGE);
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
 
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, flagCookie.toString());
+        SecurityContextHolder.setContext(context);
 
-        return AuthResponse.builder()
-                .accessToken(result.getAccessToken())
-                .build();
+        HttpSession session = httpRequest.getSession(true);
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
     }
 
-    @PostMapping("/logout")
-    public void logout(@AuthenticationPrincipal Integer userid,
-                       @CookieValue(value = "refreshToken", required = false) String refreshToken,
-                       HttpServletResponse response) {
-
-        if (userid != null && refreshToken != null) {
-            authService.logout(userid, refreshToken);
+    @PostMapping("logout")
+    public void logout(HttpServletRequest httpRequest,
+                       HttpServletResponse httpResponse) {
+        HttpSession session = httpRequest.getSession(false);
+        if (session != null) {
+            session.invalidate();
         }
 
-        ResponseCookie refreshCookie = createRefreshCookie("", 0);
-        ResponseCookie flagCookie = createFlagCookie(0);
+        deleteCookie(httpResponse, "SESSION");
 
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, flagCookie.toString());
+        SecurityContextHolder.clearContext();
     }
 
-    @PostMapping("/refresh")
-    public AuthResponse refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken,
-                                HttpServletResponse response) {
-        AuthResult result = authService.refresh(refreshToken);
-
-        ResponseCookie refreshCookie = createRefreshCookie(result.getRefreshToken(), AuthService.REFRESH_TOKEN_MAX_AGE);
-        ResponseCookie flagCookie = createFlagCookie(AuthService.REFRESH_TOKEN_MAX_AGE);
-
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, flagCookie.toString());
-
-        return AuthResponse.builder()
-                .accessToken(result.getAccessToken())
-                .build();
-    }
-
-    private ResponseCookie createRefreshCookie(String refreshToken, long maxAge) {
-        return ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
-                .path("/api/auth")
-                .maxAge(maxAge)
-                .build();
-    }
-
-    private ResponseCookie createFlagCookie(long maxAge) {
-        return ResponseCookie.from("login", "true")
-                .httpOnly(false)
-                .secure(true)
-                .sameSite("Lax")
-                .path("/")
-                .maxAge(maxAge)
-                .build();
+    private void deleteCookie(HttpServletResponse response, String name) {
+        Cookie cookie = new Cookie(name, null);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 }
