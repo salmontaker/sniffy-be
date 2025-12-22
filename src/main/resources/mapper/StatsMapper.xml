@@ -5,15 +5,9 @@
         SELECT SUM(created_at >= #{today}) AS todayTotal,
                SUM(created_at >= #{week}) AS weekTotal,
                SUM(created_at >= #{month}) AS monthTotal,
-               GREATEST(
-                       COALESCE(MAX(created_at), '0000-00-00'),
-                       COALESCE(MAX(updated_at), '0000-00-00'),
-                       COALESCE(MAX(deleted_at), '0000-00-00')
-               ) AS lastUpdated
+               COALESCE(MAX(created_at), '0000-00-00') AS lastUpdated
         FROM found_item
         WHERE created_at >= #{month}
-           OR updated_at >= #{month}
-           OR deleted_at >= #{month}
     </select>
 
     <select id="top5Agencies">
