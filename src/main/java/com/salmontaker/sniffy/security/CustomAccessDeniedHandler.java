@@ -23,10 +23,11 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request,
                        HttpServletResponse response,
                        AccessDeniedException accessDeniedException) throws IOException {
-        ApiResponse<String> body = ApiResponse.error(accessDeniedException.getMessage());
+        ApiResponse<String> body = ApiResponse.error("권한이 없습니다.");
 
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(body));
 
         log.error(accessDeniedException.getMessage());
