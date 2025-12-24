@@ -1,4 +1,4 @@
-package com.salmontaker.sniffy.security;
+package com.salmontaker.sniffy.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.salmontaker.sniffy.common.ApiResponse;

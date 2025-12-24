@@ -1,5 +1,7 @@
-package com.salmontaker.sniffy.security;
+package com.salmontaker.sniffy.security.config;
 
+import com.salmontaker.sniffy.security.handler.CustomAccessDeniedHandler;
+import com.salmontaker.sniffy.security.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
