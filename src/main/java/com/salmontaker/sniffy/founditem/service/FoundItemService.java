@@ -7,6 +7,7 @@ import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundDetailRes
 import com.salmontaker.sniffy.founditem.dto.internal.request.FoundItemRequest;
 import com.salmontaker.sniffy.founditem.dto.internal.response.FoundItemDetailResponse;
 import com.salmontaker.sniffy.founditem.dto.internal.response.FoundItemResponse;
+import com.salmontaker.sniffy.founditem.exception.FoundItemNotFoundException;
 import com.salmontaker.sniffy.founditem.repository.FoundItemRepository;
 import com.salmontaker.sniffy.founditem.repository.FoundItemSpecs;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -35,14 +35,14 @@ public class FoundItemService {
 
     public FoundItemDetailResponse getFoundItemDetail(Integer id) {
         FoundItem foundItem = foundItemRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("습득물을 찾을 수 없습니다."));
+                .orElseThrow(FoundItemNotFoundException::new);
 
         LostFoundDetailResponse response = foundItemClient.fetchItemDetail(foundItem.getAtcId(), foundItem.getFdSn())
                 .map(OpenApiResponse::getItem)
                 .block();
 
         if (response == null) {
-            throw new NoSuchElementException("습득물을 찾을 수 없습니다.");
+            throw new FoundItemNotFoundException();
         }
 
         response.setUniq(response.getUniq().replaceFirst("내용", "").strip());

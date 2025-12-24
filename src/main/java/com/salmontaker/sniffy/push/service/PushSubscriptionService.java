@@ -3,14 +3,14 @@ package com.salmontaker.sniffy.push.service;
 import com.salmontaker.sniffy.push.domain.PushSubscription;
 import com.salmontaker.sniffy.push.dto.request.PushSubscriptionDeleteRequest;
 import com.salmontaker.sniffy.push.dto.request.PushSubscriptionRequest;
+import com.salmontaker.sniffy.push.exception.PushSubscriptionNotFoundException;
 import com.salmontaker.sniffy.push.repository.PushSubscriptionRepository;
 import com.salmontaker.sniffy.user.domain.User;
+import com.salmontaker.sniffy.user.exception.UserNotFoundException;
 import com.salmontaker.sniffy.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class PushSubscriptionService {
 
     public Boolean checkSubscription(Integer userId, String endpoint) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
 
         return pushSubRepository.existsByUserIdAndEndpoint(user.getId(), endpoint);
     }
@@ -28,7 +28,7 @@ public class PushSubscriptionService {
     @Transactional
     public void subscribe(Integer userId, PushSubscriptionRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
 
         String endpoint = request.getEndpoint();
         String p256dh = request.getKeys().getP256dh();
@@ -43,12 +43,12 @@ public class PushSubscriptionService {
     @Transactional
     public void unsubscribe(Integer userId, PushSubscriptionDeleteRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
 
         String endpoint = request.getEndpoint();
 
         PushSubscription subscription = pushSubRepository.findByEndpoint(endpoint)
-                .orElseThrow(() -> new NoSuchElementException("구독정보를 찾을 수 없습니다."));
+                .orElseThrow(PushSubscriptionNotFoundException::new);
 
         // 구독 정보 제거
         pushSubRepository.delete(subscription);

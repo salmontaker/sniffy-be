@@ -4,10 +4,12 @@ import com.salmontaker.sniffy.agency.domain.Agency;
 import com.salmontaker.sniffy.agency.domain.AgencyFavorite;
 import com.salmontaker.sniffy.agency.dto.request.AgencySearchRequest;
 import com.salmontaker.sniffy.agency.dto.response.AgencyResponse;
+import com.salmontaker.sniffy.agency.exception.AgencyNotFoundException;
 import com.salmontaker.sniffy.agency.repository.AgencyFavoriteRepository;
 import com.salmontaker.sniffy.agency.repository.AgencyRepository;
 import com.salmontaker.sniffy.common.PageResponse;
 import com.salmontaker.sniffy.user.domain.User;
+import com.salmontaker.sniffy.user.exception.UserNotFoundException;
 import com.salmontaker.sniffy.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Slf4j
@@ -30,7 +31,7 @@ public class AgencyService {
 
     public AgencyResponse getAgency(Integer userId, Integer agencyId) {
         Agency agency = agencyRepository.findById(agencyId)
-                .orElseThrow(() -> new NoSuchElementException("센터를 찾을 수 없습니다."));
+                .orElseThrow(AgencyNotFoundException::new);
 
         boolean isFavorite = false;
         if (userId != null) {
@@ -64,9 +65,9 @@ public class AgencyService {
     @Transactional
     public void addFavorite(Integer userId, Integer agencyId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
         Agency agency = agencyRepository.findById(agencyId)
-                .orElseThrow(() -> new NoSuchElementException("센터를 찾을 수 없습니다."));
+                .orElseThrow(AgencyNotFoundException::new);
 
         AgencyFavorite newFavorite = AgencyFavorite.create(user, agency);
         agencyFavoriteRepository.save(newFavorite);
@@ -75,9 +76,9 @@ public class AgencyService {
     @Transactional
     public void removeFavorite(Integer userId, Integer agencyId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
         Agency agency = agencyRepository.findById(agencyId)
-                .orElseThrow(() -> new NoSuchElementException("센터를 찾을 수 없습니다."));
+                .orElseThrow(AgencyNotFoundException::new);
 
         agencyFavoriteRepository.deleteByUserIdAndAgencyId(userId, agencyId);
     }
