@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @Table(indexes = {
         @Index(name = "index_clr_nm", columnList = "clrNm"),
         @Index(name = "index_fd_ymd", columnList = "fdYmd"),
+        @Index(name = "index_fd_prdt_nm", columnList = "fdPrdtNm"),
         @Index(name = "index_prdt_cl_nm", columnList = "prdtClNm"),
         @Index(name = "index_created_at", columnList = "createdAt"),
         @Index(name = "index_updated_at", columnList = "updatedAt"),

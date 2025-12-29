@@ -36,7 +36,7 @@ public class FoundItemSpecs {
     private static Specification<FoundItem> agencyNameContains(String agencyName) {
         return (root, query, cb) -> {
             Join<FoundItem, Agency> agencyJoin = root.join("agency", JoinType.LEFT);
-            return cb.like(agencyJoin.get("name"), "%" + agencyName + "%");
+            return cb.like(agencyJoin.get("name"), agencyName + "%");
         };
     }
 
@@ -45,7 +45,7 @@ public class FoundItemSpecs {
     }
 
     private static Specification<FoundItem> fdPrdtNmContains(String fdPrdtNm) {
-        return (root, query, cb) -> cb.like(root.get("fdPrdtNm"), "%" + fdPrdtNm + "%");
+        return (root, query, cb) -> cb.like(root.get("fdPrdtNm"), fdPrdtNm + "%");
     }
 
     private static Specification<FoundItem> prdtClNmContains(String prdtClNm) {
