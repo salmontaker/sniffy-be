@@ -1,10 +1,7 @@
 package com.salmontaker.sniffy.founditem.repository;
 
-import com.salmontaker.sniffy.agency.domain.Agency;
 import com.salmontaker.sniffy.founditem.domain.FoundItem;
 import com.salmontaker.sniffy.founditem.dto.internal.request.FoundItemRequest;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
@@ -34,10 +31,7 @@ public class FoundItemSpecs {
     }
 
     private static Specification<FoundItem> agencyNameContains(String agencyName) {
-        return (root, query, cb) -> {
-            Join<FoundItem, Agency> agencyJoin = root.join("agency", JoinType.LEFT);
-            return cb.like(agencyJoin.get("name"), agencyName + "%");
-        };
+        return (root, query, cb) -> cb.like(root.get("agency").get("name"), agencyName + "%");
     }
 
     private static Specification<FoundItem> clrNmEquals(String clrNm) {
