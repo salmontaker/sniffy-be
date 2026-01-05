@@ -1,11 +1,9 @@
 package com.salmontaker.sniffy.agency.domain;
 
-import com.salmontaker.sniffy.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -13,10 +11,9 @@ import java.util.List;
 
 @Entity
 @Table(indexes = @Index(name = "index_name", columnList = "name"))
-@SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Agency extends BaseEntity {
+public class Agency {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
