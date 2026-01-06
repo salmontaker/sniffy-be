@@ -57,6 +57,7 @@ public class SecurityConfig {
         return http.securityMatchers(matchers -> matchers
                         .requestMatchers(HttpMethod.POST, "/api/auth/login")
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout")
+                        .requestMatchers(HttpMethod.GET, "/api/auth/status")
                         .requestMatchers(HttpMethod.POST, "/api/users")
                         .requestMatchers(HttpMethod.GET, "/api/users/{id:\\d+}")
                         .requestMatchers(HttpMethod.GET, "/api/agencies", "/api/agencies/{id:\\d+}")

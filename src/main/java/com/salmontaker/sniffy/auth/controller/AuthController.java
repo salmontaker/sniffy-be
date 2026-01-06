@@ -1,6 +1,7 @@
 package com.salmontaker.sniffy.auth.controller;
 
 import com.salmontaker.sniffy.auth.dto.request.LoginRequest;
+import com.salmontaker.sniffy.auth.exception.UnauthenticatedException;
 import com.salmontaker.sniffy.auth.service.AuthService;
 import com.salmontaker.sniffy.user.dto.response.UserResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,10 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.session.web.http.CookieSerializer;
 import org.springframework.session.web.http.CookieSerializer.CookieValue;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.util.List;
@@ -63,5 +61,20 @@ public class AuthController {
         cookieSerializer.writeCookieValue(new CookieValue(httpRequest, httpResponse, ""));
 
         SecurityContextHolder.clearContext();
+    }
+
+    @GetMapping("status")
+    public void status(HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        if (session == null) {
+            throw new UnauthenticatedException();
+        }
+
+        SecurityContext context = (SecurityContext)
+                session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+
+        if (context == null || context.getAuthentication() == null || !context.getAuthentication().isAuthenticated()) {
+            throw new UnauthenticatedException();
+        }
     }
 }
