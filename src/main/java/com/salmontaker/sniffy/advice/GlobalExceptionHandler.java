@@ -1,6 +1,7 @@
 package com.salmontaker.sniffy.advice;
 
 import com.salmontaker.sniffy.common.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -20,37 +21,49 @@ import java.util.NoSuchElementException;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private String getRequestDetails(HttpServletRequest request) {
+        return String.format("[%s] %s (IP: %s, User-Agent: %s)",
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                request.getHeader("User-Agent"));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResponse<String> handleIllegalArgumentException(IllegalArgumentException e) {
-        log.warn(e.getMessage());
+    public ApiResponse<String> handleIllegalArgumentException(IllegalArgumentException e,
+                                                              HttpServletRequest request) {
+        log.warn("{} - {}", getRequestDetails(request), e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResponse<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        log.warn(e.getMessage());
+    public ApiResponse<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException e,
+                                                                     HttpServletRequest request) {
+        log.warn("{} - {}", getRequestDetails(request), e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResponse<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ApiResponse<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e,
+                                                                     HttpServletRequest request) {
         List<String> errors = e.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(error -> String.format("%s: %s", error.getField(), error.getDefaultMessage()))
                 .toList();
 
-        log.warn(e.getMessage());
+        log.warn("{} - {}", getRequestDetails(request), e.getMessage());
         return ApiResponse.error(String.join(", ", errors));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponse<String> handleBadCredentialsException(BadCredentialsException e) {
-        log.warn(e.getMessage());
+    public ApiResponse<String> handleBadCredentialsException(BadCredentialsException e,
+                                                             HttpServletRequest request) {
+        log.warn("{} - {}", getRequestDetails(request), e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
@@ -63,43 +76,49 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ApiResponse<String> handleAccessDeniedException(AccessDeniedException e) {
-        log.warn(e.getMessage());
+    public ApiResponse<String> handleAccessDeniedException(AccessDeniedException e,
+                                                           HttpServletRequest request) {
+        log.warn("{} - {}", getRequestDetails(request), e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiResponse<String> handleNoSuchElementException(NoSuchElementException e) {
-        log.warn(e.getMessage());
+    public ApiResponse<String> handleNoSuchElementException(NoSuchElementException e,
+                                                            HttpServletRequest request) {
+        log.warn("{} - {}", getRequestDetails(request), e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiResponse<String> handleNoResourceFoundException(NoResourceFoundException e) {
-        log.warn(e.getMessage());
+    public ApiResponse<String> handleNoResourceFoundException(NoResourceFoundException e,
+                                                              HttpServletRequest request) {
+        log.warn("{} - {}", getRequestDetails(request), e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-    public ApiResponse<String> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
-        log.warn(e.getMessage());
+    public ApiResponse<String> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e,
+                                                                            HttpServletRequest request) {
+        log.warn("{} - {}", getRequestDetails(request), e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiResponse<String> handleIllegalStateException(IllegalStateException e) {
-        log.warn(e.getMessage());
+    public ApiResponse<String> handleIllegalStateException(IllegalStateException e,
+                                                           HttpServletRequest request) {
+        log.warn("{} - {}", getRequestDetails(request), e.getMessage());
         return ApiResponse.error(e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiResponse<String> handleException(Exception e) {
-        log.error(e.getMessage(), e);
+    public ApiResponse<String> handleException(Exception e,
+                                               HttpServletRequest request) {
+        log.error("{} - {}", getRequestDetails(request), e.getMessage(), e);
         return ApiResponse.error(e.getMessage());
     }
 }
