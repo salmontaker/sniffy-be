@@ -1,6 +1,5 @@
 package com.salmontaker.sniffy.founditem.service;
 
-import com.salmontaker.sniffy.common.OpenApiResponse;
 import com.salmontaker.sniffy.common.PageResponse;
 import com.salmontaker.sniffy.founditem.domain.FoundItem;
 import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundDetailResponse;
@@ -15,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,13 +38,15 @@ public class FoundItemService {
                 .orElseThrow(FoundItemNotFoundException::new);
 
         LostFoundDetailResponse response = foundItemClient.fetchItemDetail(foundItem.getAtcId(), foundItem.getFdSn())
-                .map(OpenApiResponse::getItem)
+                .flatMap(res -> {
+                    if (!res.isSuccess()) {
+                        return Mono.error(new FoundItemNotFoundException());
+                    }
+
+                    return Mono.just(res.getItem());
+                })
                 .block();
-
-        if (response == null) {
-            throw new FoundItemNotFoundException();
-        }
-
+        
         response.setUniq(response.getUniq().replaceFirst("내용", "").strip());
 
         return FoundItemDetailResponse.from(response);

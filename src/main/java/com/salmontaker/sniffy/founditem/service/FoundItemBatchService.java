@@ -104,12 +104,12 @@ public class FoundItemBatchService {
 
     private Mono<Integer> fetchTotalCount(String startDate, String endDate) {
         return foundItemClient.fetchItemList(startDate, endDate, 1, 1)
-                .flatMap(first -> {
-                    if (!first.isSuccess()) {
-                        return Mono.error(new RuntimeException("LOST112: " + first.getHeader().getResultMsg()));
+                .flatMap(response -> {
+                    if (!response.isSuccess()) {
+                        return Mono.error(new RuntimeException("LOST112: " + response.getHeader().getResultMsg()));
                     }
 
-                    int total = first.getBody().getTotalCount();
+                    int total = response.getBody().getTotalCount();
                     int totalPages = (int) Math.ceil((double) total / NUM_OF_ROWS);
 
                     log.info("TotalCount={}, TotalPages={}", total, totalPages);
@@ -121,8 +121,14 @@ public class FoundItemBatchService {
 
     private Flux<OpenApiResponse<LostFoundResponse>> fetchAllPages(String startDate, String endDate, int totalPages) {
         return Flux.range(1, totalPages)
-                .delayElements(Duration.ofSeconds(15))
+                .delayElements(Duration.ofSeconds(20))
                 .flatMap(page -> foundItemClient.fetchItemList(startDate, endDate, page, NUM_OF_ROWS)
+                                .flatMap(response -> {
+                                    if (!response.isSuccess()) {
+                                        return Mono.error(new RuntimeException("LOST112: " + response.getHeader().getResultMsg()));
+                                    }
+                                    return Mono.just(response);
+                                })
                                 .doOnSubscribe(sub -> log.info("Requesting page {}", page))
                                 .retryWhen(defaultRetry("page " + page)),
                         CONCURRENCY);
