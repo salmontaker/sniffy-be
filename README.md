@@ -108,6 +108,10 @@ Sniffy는 경찰청 유실물 통합포털(LOST112)의 데이터를 기반으로
 
 ## 프로젝트 구조
 
+### 시스템 구조
+
+<img src="https://github.com/user-attachments/assets/9c94f50a-0d59-4ac3-b593-384d046cd6ec" />
+
 ### 패키지 구조
 
 ```
@@ -126,12 +130,41 @@ src/main
 │   ├── stats       # 통계 데이터 집계 및 조회
 │   └── user        # 사용자 관리, 키워드 등록, 환경 설정 도메인
 │
-└── resources
+└── resources 
     ├── mapper                  # MyBatis XML Mapper (통계 쿼리 분리)
     │   └── StatsMapper.xml
     ├── application.properties  # 설정 파일
     └── data.sql                # 초기 데이터 (전국 보관소 및 샘플 데이터)
 ```
+
+### 시퀀스 다이어그램
+
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/a6a964a1-eb22-4b61-aa34-7ec077cf9475" /></td>
+  </tr>
+  <tr>
+    <th>유실물 동기화 작업</th>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/5f4feee6-337f-4934-96e6-4db9c5ea479d" /></td>
+  </tr>
+  <tr>
+    <th>유실물 목록 조회 & 상세 조회</th>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/39043e94-6d05-4aa9-bed1-70e10e4f13c8" /></td>
+  </tr>
+  <tr>
+    <th>키워드 알림 생성 & 푸시 발송</th>
+  </tr>
+</table>
 
 ### ERD
 
