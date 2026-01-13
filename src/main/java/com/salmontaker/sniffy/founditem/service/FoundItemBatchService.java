@@ -1,6 +1,6 @@
 package com.salmontaker.sniffy.founditem.service;
 
-import com.salmontaker.sniffy.common.OpenApiResponse;
+import com.salmontaker.sniffy.common.dto.response.OpenApiResponse;
 import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundResponse;
 import com.salmontaker.sniffy.founditem.repository.FoundItemBatchRepository;
 import lombok.RequiredArgsConstructor;

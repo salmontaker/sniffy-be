@@ -1,6 +1,6 @@
 package com.salmontaker.sniffy.advice;
 
-import com.salmontaker.sniffy.common.ApiResponse;
+import com.salmontaker.sniffy.common.dto.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

@@ -2,7 +2,7 @@ package com.salmontaker.sniffy.founditem.service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.salmontaker.sniffy.common.OpenApiResponse;
+import com.salmontaker.sniffy.common.dto.response.OpenApiResponse;
 import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundDetailResponse;
 import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundResponse;
 import lombok.extern.slf4j.Slf4j;

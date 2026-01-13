@@ -1,6 +1,6 @@
 package com.salmontaker.sniffy.notice.domain;
 
-import com.salmontaker.sniffy.common.BaseEntity;
+import com.salmontaker.sniffy.common.domain.BaseEntity;
 import com.salmontaker.sniffy.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Getter;

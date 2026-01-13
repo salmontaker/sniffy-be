@@ -7,7 +7,7 @@ import com.salmontaker.sniffy.agency.dto.response.AgencyResponse;
 import com.salmontaker.sniffy.agency.exception.AgencyNotFoundException;
 import com.salmontaker.sniffy.agency.repository.AgencyFavoriteRepository;
 import com.salmontaker.sniffy.agency.repository.AgencyRepository;
-import com.salmontaker.sniffy.common.PageResponse;
+import com.salmontaker.sniffy.common.dto.response.PageResponse;
 import com.salmontaker.sniffy.user.domain.User;
 import com.salmontaker.sniffy.user.exception.UserNotFoundException;
 import com.salmontaker.sniffy.user.repository.UserRepository;

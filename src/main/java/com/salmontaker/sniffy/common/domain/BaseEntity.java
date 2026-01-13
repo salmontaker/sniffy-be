@@ -1,4 +1,4 @@
-package com.salmontaker.sniffy.common;
+package com.salmontaker.sniffy.common.domain;
 
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;

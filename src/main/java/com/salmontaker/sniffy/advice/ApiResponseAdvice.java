@@ -2,7 +2,7 @@ package com.salmontaker.sniffy.advice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.salmontaker.sniffy.common.ApiResponse;
+import com.salmontaker.sniffy.common.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;

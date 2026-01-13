@@ -1,7 +1,7 @@
 package com.salmontaker.sniffy.user.domain;
 
 import com.salmontaker.sniffy.agency.domain.AgencyFavorite;
-import com.salmontaker.sniffy.common.BaseEntity;
+import com.salmontaker.sniffy.common.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

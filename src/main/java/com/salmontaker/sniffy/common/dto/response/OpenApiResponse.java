@@ -1,4 +1,4 @@
-package com.salmontaker.sniffy.common;
+package com.salmontaker.sniffy.common.dto.response;
 
 import lombok.Data;
 

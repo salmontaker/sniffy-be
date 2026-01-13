@@ -3,7 +3,7 @@ package com.salmontaker.sniffy.agency.controller;
 import com.salmontaker.sniffy.agency.dto.request.AgencySearchRequest;
 import com.salmontaker.sniffy.agency.dto.response.AgencyResponse;
 import com.salmontaker.sniffy.agency.service.AgencyService;
-import com.salmontaker.sniffy.common.PageResponse;
+import com.salmontaker.sniffy.common.dto.response.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;

@@ -1,6 +1,6 @@
 package com.salmontaker.sniffy.founditem.controller;
 
-import com.salmontaker.sniffy.common.PageResponse;
+import com.salmontaker.sniffy.common.dto.response.PageResponse;
 import com.salmontaker.sniffy.founditem.dto.internal.request.FoundItemRequest;
 import com.salmontaker.sniffy.founditem.dto.internal.response.FoundItemDetailResponse;
 import com.salmontaker.sniffy.founditem.dto.internal.response.FoundItemResponse;

@@ -1,6 +1,6 @@
 package com.salmontaker.sniffy.notice.service;
 
-import com.salmontaker.sniffy.common.PageResponse;
+import com.salmontaker.sniffy.common.dto.response.PageResponse;
 import com.salmontaker.sniffy.notice.domain.Notice;
 import com.salmontaker.sniffy.notice.dto.response.NoticeResponse;
 import com.salmontaker.sniffy.notice.exception.NoticeAccessDeniedException;
