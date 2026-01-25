@@ -1,6 +1,7 @@
 package com.salmontaker.sniffy.advice;
 
 import com.salmontaker.sniffy.common.dto.response.ApiResponse;
+import com.salmontaker.sniffy.common.exception.ExternalApiException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -110,6 +111,14 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiResponse<String> handleIllegalStateException(IllegalStateException e,
                                                            HttpServletRequest request) {
+        log.warn("{} - {}", getRequestDetails(request), e.getMessage());
+        return ApiResponse.error(e.getMessage());
+    }
+
+    @ExceptionHandler(ExternalApiException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public ApiResponse<String> handleExternalApiException(ExternalApiException e,
+                                                          HttpServletRequest request) {
         log.warn("{} - {}", getRequestDetails(request), e.getMessage());
         return ApiResponse.error(e.getMessage());
     }

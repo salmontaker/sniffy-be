@@ -1,6 +1,7 @@
 package com.salmontaker.sniffy.founditem.service;
 
 import com.salmontaker.sniffy.common.dto.response.PageResponse;
+import com.salmontaker.sniffy.common.exception.ExternalApiException;
 import com.salmontaker.sniffy.founditem.domain.FoundItem;
 import com.salmontaker.sniffy.founditem.dto.external.response.LostFoundDetailResponse;
 import com.salmontaker.sniffy.founditem.dto.internal.request.FoundItemRequest;
@@ -37,19 +38,18 @@ public class FoundItemService {
         FoundItem foundItem = foundItemRepository.findById(id)
                 .orElseThrow(FoundItemNotFoundException::new);
 
-        LostFoundDetailResponse response = foundItemClient.fetchItemDetail(foundItem.getAtcId(), foundItem.getFdSn())
+        return foundItemClient.fetchItemDetail(foundItem.getAtcId(), foundItem.getFdSn())
                 .flatMap(res -> {
-                    if (!res.isSuccess()) {
+                    if (!res.isSuccess() || res.getItem() == null) {
                         return Mono.error(new FoundItemNotFoundException());
                     }
 
-                    return Mono.just(res.getItem());
+                    LostFoundDetailResponse item = res.getItem();
+                    item.setUniq(item.getUniq().replaceFirst("내용", "").strip());
+
+                    return Mono.just(FoundItemDetailResponse.from(item));
                 })
                 .block();
-        
-        response.setUniq(response.getUniq().replaceFirst("내용", "").strip());
-
-        return FoundItemDetailResponse.from(response);
     }
 
     public List<FoundItemResponse> getRandomTodayItems() {
