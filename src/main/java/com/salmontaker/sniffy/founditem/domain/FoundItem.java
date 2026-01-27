@@ -39,7 +39,7 @@ public class FoundItem extends BaseEntity {
     @Column(length = 100)
     private String clrNm;
 
-    @Column(length = 100)
+    @Column(length = 200)
     private String fdFilePathImg;
 
     @Column(length = 200)
