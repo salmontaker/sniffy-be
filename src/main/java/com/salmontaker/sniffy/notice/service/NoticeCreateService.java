@@ -102,8 +102,9 @@ public class NoticeCreateService {
         return Notice.create(user, title, content);
     }
 
+
     private String summaryItem(FoundItem item) {
-        String url = String.format("https://www.lost112.go.kr/find/findDetail.do?ATC_ID=%s&FD_SN=%d", item.getAtcId(), item.getFdSn());
+        String url = String.format("https://minwon24.police.go.kr/cvlcpt/selectFindListDetail.do?&cvlcptId=MW-201&pkupCmdtyMngId=%s&sortSn=%d", item.getAtcId(), item.getFdSn());
         return String.format("%s(%s): %s", item.getAgency().getName(), item.getFdPrdtNm(), url);
     }
 
